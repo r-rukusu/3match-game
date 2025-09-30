@@ -165,8 +165,8 @@ h1 {
     border-radius: 8px;
     box-sizing: border-box;
 
-    --translate-x: calc(var(--col)* (var(--cell-size)+var(--gap-size)));
-    --translate-y: calc(var(--row)* (var(--cell-size)+var(--gap-size)));
+    --translate-x: calc(var(--col) * (var(--cell-size) + var(--gap-size)));
+    --translate-y: calc(var(--row) * (var(--cell-size) + var(--gap-size)));
     --scale-factor: 1;
     /* JavaScriptから --row と --col を受け取るための初期値を設定 */
     --row: 0;
