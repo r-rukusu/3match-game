@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ANIMATION_DURATION: 300,
         COMBO_BONUS_MULTIPLIER: 0.1,
         SWIPE_THRESHOLD: 10,
-        INIT_LOOP_SAFETY_LIMIT: 100,
+        INIT_LOOP_SAFETY_LIMIT: 500,
     };
 
     // ===================================================================================
