@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
         DUMMY_IMAGE_SRC: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
         ANIMATION_DURATION: 300,
         COMBO_BONUS_MULTIPLIER: 0.1,
+        SWIPE_THRESHOLD: 10,
+        INIT_LOOP_SAFETY_LIMIT: 100,
     };
 
     // ===================================================================================
@@ -59,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetGameState() {
         gameState = {
             grid: [],
+            cellElements: [],
             score: 0,
             level: 1,
             exp: 0,
@@ -69,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
             timerId: null,
         };
         // ★修正点: DOM参照配列もリセット
-        cellElements = [];
     }
 
     // ===================================================================================
@@ -87,9 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function startGame() {
         resetGameState();
         showScreen('game');
+        let loopCount = 0;
 
         do {
             createGridData();
+            if (loopCount++ > CONFIG.INIT_LOOP_SAFETY_LIMIT){
+                console.warn('初期盤面のマッチ解消ループが上限に到達しました。');
+                break;
+            }
         } while (findMatches().length > 0);
 
         renderGrid();
@@ -166,13 +173,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // ★修正点: cellElements配列にDOM参照を保存するよう変更
     function renderGrid() {
         dom.gridContainer.innerHTML = '';
-        cellElements = []; // 配列を初期化
+        gameState.cellElements = []; // 配列を初期化
         gameState.grid.forEach((row, rowIndex) => {
-            cellElements[rowIndex] = []; // 行を初期化
+            gameState.cellElements[rowIndex] = []; // 行を初期化
             row.forEach((imageName, colIndex) => {
                 const cell = createCell(rowIndex, colIndex, imageName);
                 dom.gridContainer.appendChild(cell);
-                cellElements[rowIndex][colIndex] = cell; // DOM参照を保存
+                gameState.cellElements[rowIndex][colIndex] = cell; // DOM参照を保存
             });
         });
     }
@@ -231,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
 
-        if (absDx < 10 && absDy < 10) {
+        if (absDx < CONFIG.SWIPE_THRESHOLD && absDy < CONFIG.SWIPE_THRESHOLD) {
             handleSelection(touchStartCoords.target);
             touchStartCoords = null;
             return;
@@ -391,9 +398,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (gameState.grid[readRow][col] !== null) {
                     if (writeRow !== readRow) {
                         gameState.grid[writeRow][col] = gameState.grid[readRow][col];
-                        cellElements[writeRow][col] = cellElements[readRow][col];
+                        gameState.cellElements[writeRow][col] = cellElements[readRow][col];
                         gameState.grid[readRow][col] = null;
-                        cellElements[readRow][col] = null;
+                        gameState.cellElements[readRow][col] = null;
                         
                         const cell = cellElements[writeRow][col];
                         cell.dataset.row = writeRow;
@@ -414,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 gameState.grid[row][col] = newImage;
                 
                 const newCell = createCell(row, col, newImage);
-                cellElements[row][col] = newCell;
+                gameState.cellElements[row][col] = newCell;
 
                 // ★修正点: transformを直接いじる代わりに、--rowを画面外に設定
                 const initialRow = - (emptyCount - row);
@@ -452,8 +459,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // ★修正点: cellElementsから直接参照を取得する方が高速だが、互換性のため残す
     function getCellElement(row, col) {
-        // return cellElements[row]?.[col] ?? null; // こちらの方が効率的
-        return document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+        if(!isValidCoords(row, col)) return null;
+        return gameState.cellElements[row][col]; // こちらの方が効率的
+        // return document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
     }
 
     function areAdjacent(cellA, cellB) {
