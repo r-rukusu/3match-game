@@ -35,10 +35,12 @@ body {
     color: var(--text-color);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     height: 100vh;
     margin: 0;
     overflow: hidden; /* スクロールバーを非表示 */
+    padding-top: 20px;
+    box-sizing: border-box;
 }
 
 #game-container {
