@@ -398,61 +398,91 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
    // ★修正点: 新しいセルの登場アニメーションをCSS変数を使って制御する
+// script.js の dropAndRefillCells 関数を、以下に差し替えてください。
+
     async function dropAndRefillCells() {
         const size = CONFIG.GRID_SIZE;
         const animationPromises = [];
+        const fragment = document.createDocumentFragment();
 
+        // 1. 落下処理
         for (let col = 0; col < size; col++) {
-            let emptyCount = 0;
             let writeRow = size - 1;
             for (let readRow = size - 1; readRow >= 0; readRow--) {
                 if (gameState.grid[readRow][col] !== null) {
                     if (writeRow !== readRow) {
+                        // データとDOM参照を新しい位置に移動
                         gameState.grid[writeRow][col] = gameState.grid[readRow][col];
-                        gameState.cellElements[writeRow][col] = cellElements[readRow][col];
+                        // ★★★ ここが修正点です ★★★
+                        gameState.cellElements[writeRow][col] = gameState.cellElements[readRow][col];
                         gameState.grid[readRow][col] = null;
                         gameState.cellElements[readRow][col] = null;
-                        
-                        const cell = cellElements[writeRow][col];
-                        cell.dataset.row = writeRow;
-                        
-                        animationPromises.push(new Promise(resolve => {
-                            updateCellPosition(cell, writeRow, col); // CSS変数を更新して移動
-                            setTimeout(resolve, CONFIG.ANIMATION_DURATION);
-                        }));
+
+                        const cell = gameState.cellElements[writeRow][col];
+                        if (cell) {
+                            cell.dataset.row = writeRow;
+                            
+                            animationPromises.push(new Promise(resolve => {
+                                updateCellPosition(cell, writeRow, col);
+                                setTimeout(resolve, CONFIG.ANIMATION_DURATION);
+                            }));
+                        }
                     }
                     writeRow--;
-                } else {
-                    emptyCount++;
                 }
             }
+        }
 
-            for (let row = 0; row < emptyCount; row++) {
-                const newImage = getRandomImageName();
-                gameState.grid[row][col] = newImage;
-                
-                const newCell = createCell(row, col, newImage);
-                gameState.cellElements[row][col] = newCell;
+        // アニメーションの完了を待つ
+        await Promise.all(animationPromises);
+        animationPromises.length = 0; // 配列をリセット
 
-                // ★修正点: transformを直接いじる代わりに、--rowを画面外に設定
-                const initialRow = - (emptyCount - row);
-                newCell.style.setProperty('--row', initialRow);
-                newCell.style.setProperty('--col', col);
-                
-                dom.gridContainer.appendChild(newCell);
-                
-                animationPromises.push(new Promise(resolve => {
-                    setTimeout(() => {
-                        // 本来の位置に--rowを更新することで、CSSがアニメーションを実行
-                        updateCellPosition(newCell, row, col);
-                        setTimeout(resolve, CONFIG.ANIMATION_DURATION);
-                    }, 50);
-                }));
+        // 2. 補充処理
+        for (let col = 0; col < size; col++) {
+            let emptyCount = 0;
+            for (let row = size - 1; row >= 0; row--) {
+                if (gameState.grid[row][col] === null) {
+                    emptyCount++;
+                    const newImage = getRandomImageName();
+                    gameState.grid[row][col] = newImage;
+
+                    const newCell = createCell(row, col, newImage);
+                    gameState.cellElements[row][col] = newCell;
+                    
+                    const initialRow = -emptyCount;
+                    newCell.style.setProperty('--row', initialRow);
+                    newCell.style.setProperty('--col', col);
+                    fragment.appendChild(newCell);
+
+                    animationPromises.push(new Promise(resolve => {
+                        // setTimeoutを１つにまとめる
+                        setTimeout(() => {
+                            updateCellPosition(newCell, row, col);
+                            resolve();
+                        }, 50 * emptyCount);
+                    }));
+                }
             }
         }
-        await Promise.all(animationPromises);
+
+        dom.gridContainer.appendChild(fragment);
+        
+        // アニメーションの完了を待つためのPromiseを作成
+        await new Promise(resolve => {
+            let completed = 0;
+            if (animationPromises.length === 0) {
+                resolve();
+                return;
+            }
+            animationPromises.forEach(p => p.then(() => {
+                completed++;
+                if (completed === animationPromises.length) {
+                    setTimeout(resolve, CONFIG.ANIMATION_DURATION);
+                }
+            }));
+        });
     }
-    
+        
     // ===================================================================================
     // ヘルパー関数群
     // ===================================================================================
