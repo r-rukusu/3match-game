@@ -1,7 +1,7 @@
 # 3match-game
 本ゲームのキャラクターイラストは、Bokemon 様に制作していただきました。
 
-Bokemon:
+Bokemon
 
 Twitter: https://x.com/bokemon_obake
 
