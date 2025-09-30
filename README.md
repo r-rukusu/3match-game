@@ -10,3 +10,6 @@ Twitter: https://x.com/bokemon_obake
 R/rukusu
 
 Twitter: https://x.com/kmdwad89_9
+
+## ピースを入れ替えて3つ揃えて消そう！！
+## コンボで時間内にたくさん消そう！！
