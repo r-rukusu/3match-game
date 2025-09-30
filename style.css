@@ -36,9 +36,10 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
-    overflow: hidden; /* スクロールバーを非表示 */
+    overflow-y: auto;
+    overflow-x: hidden; /* スクロールバーを非表示 */
     padding-top: 20px;
     box-sizing: border-box;
 }
