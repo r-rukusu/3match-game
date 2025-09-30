@@ -164,7 +164,10 @@ h1 {
     background-color: var(--cell-bg-color);
     border-radius: 8px;
     box-sizing: border-box;
-    
+
+    --translate-x: calc(var(var(--col))* (var(var(--cell-size)+var(var(--gap-size)))));
+    --translate-y: calc(var(var(--row))* (var(var(--cell-size)+var(var(--gap-size)))));
+    --scale-factor: 1;
     /* JavaScriptから --row と --col を受け取るための初期値を設定 */
     --row: 0;
     --col: 0;
@@ -173,10 +176,7 @@ h1 {
      * これにより、ウィンドウサイズが変わって --cell-size や --gap-size が変更されると、
      * ブラウザが自動的に位置を再計算してくれます。
      */
-    transform: translate(
-        calc(var(--col) * (var(--cell-size) + var(--gap-size))),
-        calc(var(--row) * (var(--cell-size) + var(--gap-size)))
-    );
+    transform: translate(var(--translate-x),var(--translate-y)) scale(var(--scale-factor));
     
     /* アニメーションの対象にtransformを追加 */
     transition: transform 0.3s ease, opacity 0.3s ease;
@@ -192,7 +192,7 @@ h1 {
 /* 選択されたセルのスタイル */
 .cell.selected {
     outline: 3px solid #f90;
-    transform: scale(1.1);
+    --scale-factor: 1.1;
 }
 
 /* 消えるときのアニメーション */
