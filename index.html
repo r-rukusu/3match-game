@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像マッチゲーム＋アイテム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-container">
+
+        <div id="start-screen" class="screen active">
+            <h1>画像マッチゲーム</h1>
+            <p>同じキャラクターを3つ以上並べて消そう！</p>
+            <button id="start-button">ゲーム開始</button>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div id="hud">
+                <div class="hud-item">
+                    <span class="label">SCORE</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="hud-item">
+                    <span class="label">LEVEL</span>
+                    <span id="level">1</span>
+                </div>
+                <div class="hud-item">
+                    <span class="label">TIME</span>
+                    <span id="time-left">60</span>
+                </div>
+            </div>
+            <div id="exp-bar-container">
+                <div id="exp-bar"></div>
+            </div>
+            <div id="grid-container"></div>
+            <div id="combo-display"></div>
+            <div id="item-container">
+                <p>（アイテム機能はここに追加可能）</p>
+            </div>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+            <h2>ゲームオーバー</h2>
+            <p>最終スコア: <span id="final-score">0</span></p>
+            <button id="restart-button">もう一度プレイ</button>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

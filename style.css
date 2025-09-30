@@ -1,0 +1,215 @@
+/*
+ * ゲーム開発くん１号 - 画像マッチゲーム スタイルシート
+ *
+ * 設計思想に基づき、保守性と動作性を重視したスタイル定義です。
+ * - CSSカスタムプロパティ(:root)で主要なデザイン値を一元管理し、変更を容易にしています。
+ * - パフォーマンスの高いtransformプロパティを利用して、滑らかなアニメーションを実現します。
+ * - vmin単位を用いることで、多様なデバイスサイズに柔軟に対応するレスポンシブデザインを採用しています。
+ */
+
+:root {
+    /* --- サイズ設定 --- */
+    --board-size: 90vmin;      /* 盤面全体のサイズ */
+    --grid-size: 8;            /* JSのGRID_SIZEと合わせる */
+    --gap-size: 0.8vmin;       /* セル間の隙間 */
+    --border-radius: 10px;
+
+    /* --- 計算済み変数 (変更不要) --- */
+    --cell-size: calc((var(--board-size) - var(--gap-size) * (var(--grid-size) + 1)) / var(--grid-size));
+
+    /* --- 色設定 --- */
+    --bg-color: #faf8ef;
+    --board-bg-color: #bbada0;
+    --cell-bg-color: rgba(238, 228, 218, 0.35);
+    --text-color: #776e65;
+    --button-bg-color: #8f7a66;
+    --button-text-color: #fff;
+}
+
+/* ===================================================================================
+   基本レイアウトとフォント設定
+   =================================================================================== */
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden; /* スクロールバーを非表示 */
+}
+
+#game-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+
+    /* ★★★ 修正点：ここから3行を追加 ★★★ */
+    display: flex;             /* Flexboxを有効にする */
+    flex-direction: column;    /* 子要素を縦方向に並べる */
+    align-items: center;       /* 子要素を水平方向の中央に揃える */
+}
+
+h1 {
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+/* ===================================================================================
+   画面ごとの表示制御 (start, game, game-over)
+   =================================================================================== */
+.screen {
+    display: none;
+}
+.screen.active {
+    display: block;
+}
+
+#game-over-screen h2 {
+    font-size: 32px;
+}
+
+#game-over-screen p {
+    font-size: 24px;
+    margin: 20px 0;
+}
+
+.button {
+    display: inline-block;
+    padding: 15px 30px;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.button:hover {
+    background-color: #776e65;
+}
+
+/* ===================================================================================
+   ゲーム画面UI (スコア、タイマーなど)
+   =================================================================================== */
+#game-ui {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.ui-element {
+    background: var(--board-bg-color);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+#exp-bar-container {
+    width: 100%;
+    height: 10px;
+    background-color: #ccc;
+    border-radius: 5px;
+    margin: 5px 0 15px;
+    overflow: hidden;
+}
+
+#exp-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #8f7a66;
+    transition: width 0.3s ease;
+}
+
+/* ===================================================================================
+   ゲーム盤面 (Grid Container) とセル (Cell)
+   ★ JavaScriptの `position: absolute` に対応したスタイル
+   =================================================================================== */
+#grid-container {
+    width: var(--board-size);
+    height: var(--board-size);
+    box-sizing: border-box;
+    background-color: var(--board-bg-color);
+    padding: var(--gap-size);
+    border-radius: var(--border-radius);
+    position: relative; /* ★重要: position:absolute の基準点となります */
+    margin: 0 auto;
+    /* スマホでの意図しないスクロールを防止 */
+    touch-action: none;
+}
+
+.cell {
+    /* ★重要: position:absolute と transform を使ったレスポンシブ対応 */
+    position: absolute;
+    width: var(--cell-size);
+    height: var(--cell-size);
+    background-color: var(--cell-bg-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    
+    /* JavaScriptから --row と --col を受け取るための初期値を設定 */
+    --row: 0;
+    --col: 0;
+
+    /* * transformで位置を計算。
+     * これにより、ウィンドウサイズが変わって --cell-size や --gap-size が変更されると、
+     * ブラウザが自動的に位置を再計算してくれます。
+     */
+    transform: translate(
+        calc(var(--col) * (var(--cell-size) + var(--gap-size))),
+        calc(var(--row) * (var(--cell-size) + var(--gap-size)))
+    );
+    
+    /* アニメーションの対象にtransformを追加 */
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.cell img {
+    width: 100%;
+    height: 100%;
+    user-select: none; /* 画像のドラッグ選択を防止 */
+    pointer-events: none; /* 画像へのイベントを親のcellに透過 */
+}
+
+/* 選択されたセルのスタイル */
+.cell.selected {
+    outline: 3px solid #f90;
+    transform: scale(1.1);
+}
+
+/* 消えるときのアニメーション */
+.cell.fade-out {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+/* ===================================================================================
+   コンボ表示
+   =================================================================================== */
+#combo-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-size: 48px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: all 0.2s ease-out;
+    pointer-events: none; /* 操作の邪魔にならないように */
+    z-index: 100;
+}
+
+#combo-display.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
