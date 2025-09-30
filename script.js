@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================================================
     let gameState = {};
     // ★修正点: DOM要素への参照を保持する2次元配列を追加
-    let cellElements = [];
+    // let cellElements = [];
 
     function resetGameState() {
         gameState = {
@@ -383,13 +383,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function removeMatchedCells(matchedCoords) {
         const promises = matchedCoords.map(coord => {
             const [row, col] = coord.split('-').map(Number);
-            const cell = cellElements[row][col];
+            const cell = gameState.cellElements[row][col];
             if (cell) {
                 cell.classList.add('fade-out');
                 return sleep(CONFIG.ANIMATION_DURATION).then(() => {
                     cell.remove();
                     gameState.grid[row][col] = null;
-                    cellElements[row][col] = null; // 参照もnull化
+                    gameState.cellElements[row][col] = null; // 参照もnull化
                 });
             }
             return Promise.resolve();
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { row: r2, col: c2 } = getCellCoords(cellB);
         [gameState.grid[r1][c1], gameState.grid[r2][c2]] = [gameState.grid[r2][c2], gameState.grid[r1][c1]];
         // DOM参照もスワップ
-        [cellElements[r1][c1], cellElements[r2][c2]] = [cellElements[r2][c2], cellElements[r1][c1]];
+        [gameState.cellElements[r1][c1], gameState.cellElements[r2][c2]] = [gameState.cellElements[r2][c2], gameState.cellElements[r1][c1]];
     }
 
     function swapAnimation(cellA, cellB) {
