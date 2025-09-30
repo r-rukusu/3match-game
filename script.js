@@ -104,6 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         do {
             createGridData();
+            matches = findMatches(); 
+            console.log(`生成試行 #${loopCount + 1}: マッチを ${matches.length} 件検出しました。`);
+            if (matches.length > 0) {
+            console.log("マッチが見つかったため、盤面を再生成します...");
+            }
             if (loopCount++ > CONFIG.INIT_LOOP_SAFETY_LIMIT){
                 console.warn('初期盤面のマッチ解消ループが上限に到達しました。');
                 break;
