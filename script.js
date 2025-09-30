@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         GRID_SIZE: 8,
         GAME_TIME_SECONDS: 60,
         LEVEL_UP_EXP_BASE: 100,
-        IMAGE_NAMES: ['1.png', '2.png', '3.png', '4.png'],
+        IMAGE_NAMES: ['1.png', '2.png', '3.png', '4.png', '5.png'],
         IMAGE_PATH: './img/',
         DUMMY_IMAGE_SRC: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
         ANIMATION_DURATION: 300,
