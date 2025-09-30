@@ -36,7 +36,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
     margin: 0;
     overflow-y: auto;
     overflow-x: hidden; /* スクロールバーを非表示 */

@@ -13,7 +13,18 @@
  *
  * この修正により、表示の不整合が解消され、システムの安全性と保守性がさらに向上しました。
  */
+function setVhProperty() {
+  // window.innerHeightを100で割り、1vhに相当する値を計算
+  const vh = window.innerHeight * 0.01;
+  // ドキュメントのルート要素(--vh)に計算した値を設定
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
 
+// ページ読み込み時に一度実行
+setVhProperty();
+
+// ウィンドウサイズが変更されたときにも再実行（回転などに対応）
+window.addEventListener('resize', setVhProperty);
 document.addEventListener('DOMContentLoaded', () => {
 
     // ===================================================================================
