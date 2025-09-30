@@ -18,11 +18,11 @@
     --cell-size: calc((var(--board-size) - var(--gap-size) * (var(--grid-size) + 1)) / var(--grid-size));
 
     /* --- 色設定 --- */
-    --bg-color: #faf8ef;
-    --board-bg-color: #bbada0;
-    --cell-bg-color: rgba(238, 228, 218, 0.35);
-    --text-color: #776e65;
-    --button-bg-color: #8f7a66;
+    --bg-color: #7cbbdd;
+    --board-bg-color: #eccdfd;
+    --cell-bg-color: rgba(162, 196, 255, 0.702);
+    --text-color: #090501;
+    --button-bg-color: #8189e8;
     --button-text-color: #fff;
 }
 
@@ -58,7 +58,7 @@ body {
 }
 
 h1 {
-    font-size: 40px;
+    font-size: 60px;
     margin-bottom: 20px;
 }
 
@@ -105,7 +105,7 @@ h1 {
     display: flex;
     justify-content: space-between;
     margin-bottom: 15px;
-    font-size: 18px;
+    font-size: 24px;
     font-weight: bold;
 
     flex-wrap: wrap;          /* 要素の折り返しを許可する */
