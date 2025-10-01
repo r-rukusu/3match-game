@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
         GRID_SIZE: 8,
         GAME_TIME_SECONDS: 60,
         LEVEL_UP_EXP_BASE: 100,
+        CLEAR_SCORE_THRESHOLD: 2000,
+        CLEAR_IMAGE_NAME: '5_clear.png',
         IMAGE_NAMES: ['1.png', '2.png', '3.png', '4.png', '5.png'],
         IMAGE_PATH: './img/',
         DUMMY_IMAGE_SRC: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
@@ -51,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startScreen: document.getElementById('start-screen'),
         gameScreen: document.getElementById('game-screen'),
         gameOverScreen: document.getElementById('game-over-screen'),
+        gameOverTitle: document.getElementById('game-over-title'),
         startButton: document.getElementById('start-button'),
         restartButton: document.getElementById('restart-button'),
         gridContainer: document.getElementById('grid-container'),
@@ -60,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         expBar: document.getElementById('exp-bar'),
         finalScore: document.getElementById('final-score'),
         comboDisplay: document.getElementById('combo-display'),
+        clearBonusImage: document.getElementById('clear-bonus-image'),
     };
 
     // ===================================================================================
@@ -99,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================================================
     function startGame() {
         resetGameState();
+        dom.clearBonusImage.classList.add('hidden');
         showScreen('game');
         let loopCount = 0;
 
@@ -122,6 +127,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function gameOver() {
         stopTimer();
+        if  (gameState.score >= CONFIG.CLEAR_SCORE_THRESHOLD) {
+            dom.gameOverTitle.textContent  = 'ゲームクリア！';
+            dom.clearBonusImage.src = `${CONFIG.IMAGE_PATH}${CONFIG.CLEAR_IMAGE_NAME}`;
+            dom.clearBonusImage.classList.remove('hidden');
+        } else {
+            dom.gameOverTitle.textContent  =  'ゲームオーバー';
+            dom.clearBonusImage.classList.add('hidden');
+        }
+
         dom.finalScore.textContent = gameState.score;
         showScreen('gameOver');
     }

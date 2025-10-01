@@ -72,6 +72,19 @@ h1 {
     display: block;
 }
 
+.hidden {
+    display: none !important;
+}
+
+/* 特典画像のスタイル */
+#clear-bonus-image {
+    max-width: 80%; /* 幅がコンテナをはみ出さないように */
+    height: auto;
+    margin-top: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
 #game-over-screen h2 {
     font-size: 32px;
 }
