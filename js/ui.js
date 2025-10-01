@@ -5,6 +5,7 @@
 import { dom } from './dom.js';
 import { CONFIG } from './config.js';
 import { gameState } from './gameState.js';
+import * as effects from './effects.js';
 
 export function showScreen(screenName) {
     dom.startScreen.classList.remove('active');
@@ -22,6 +23,29 @@ export function updateUI() {
     const requiredExp = CONFIG.LEVEL_UP_EXP_BASE * gameState.level;
     const expPercentage = (gameState.exp / requiredExp) * 100;
     dom.expBar.style.width = `${expPercentage}%`;
+}
+
+/**
+ * マッチしたセルが消える演出を再生します。
+ * 複数のセルに対して同時にパーティクルエフェクトを発生させます。
+ * @param {Array<HTMLElement>} matchedCellElements - マッチしたセルのDOM要素の配列
+ */
+export function playMatchEffect(matchedCellElements) {
+    matchedCellElements.forEach(cellEl => {
+        effects.playParticleEffect(cellEl);
+    });
+}
+
+/**
+ * コンボ演出を再生します。
+ * コンボ数表示と画面シェイクを同時に行います。
+ * @param {number} comboCount - 現在のコンボ数
+ */
+export async function playComboEffect(comboCount) {
+    if (comboCount < 2) return;
+    
+    effects.showComboDisplay(comboCount);
+    await effects.playScreenShake();
 }
 
 export function showCombo(combo) {

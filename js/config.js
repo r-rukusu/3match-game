@@ -23,5 +23,28 @@ export const CONFIG = {
         LINE_BOMB: { type: 'line_bomb', className: 'line-bomb', creationCondition: { type: 'match', length: 4 } },
         BOMB: { type: 'bomb', className: 'bomb', creationCondition: { type: 'shape', shape: ['L', 'T'] } },
         CROSS_BOMB: { type: 'cross_bomb', className: 'cross-bomb', creationCondition: { type: 'shape', shape: ['cross'] } },
-    }
+    },
+    /**
+     * 演出（エフェクト）に関する設定
+     */
+    effects: {
+        // パーティクルエフェクトの設定
+        particle: {
+            count: 10, // 1回のマッチで放出されるパーティクルの数
+            minSize: 5,  // パーティクルの最小サイズ (px)
+            maxSize: 15, // パーティクルの最大サイズ (px)
+            distance: 80, // パーティクルの飛距離 (px)
+            duration: 600, // アニメーション時間 (ms)
+            colors: ['#ffc107', '#ff85a2', '#8effa9', '#81c3d7'] // パーティクルの色のリスト
+        },
+        // 画面シェイクの設定
+        screenShake: {
+            duration: 300 // アニメーション時間 (ms)
+        },
+        // コンボ表示の設定
+        combo: {
+            duration: 1000 // 表示時間 (ms)
+        }
+    },
+
 };

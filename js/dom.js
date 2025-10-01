@@ -22,4 +22,5 @@ export const dom = {
     finalScore: document.getElementById('final-score'),
     comboDisplay: document.getElementById('combo-display'),
     clearBonusImage: document.getElementById('clear-bonus-image'),
+    gameContainer: document.getElementById('game-container'), // screen-shake用
 };

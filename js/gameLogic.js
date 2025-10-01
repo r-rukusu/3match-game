@@ -16,6 +16,7 @@ import {
     calculatePoints, checkLevelUp 
 } from './utils.js';
 import { dom } from './dom.js';
+import * as ui from './ui.js'; // uiモジュールをインポート
 
 // ===================================================================================
 // 公開(export)する関数
@@ -95,6 +96,54 @@ export function createGridData() {
     }
 }
 
+/**
+ * マッチしたピースを処理し、スコアを加算し、新しいピースを補充する一連の流れを管理します。
+ * 連鎖（コンボ）が続く限り、この処理を繰り返します。
+ */
+export async function handleMatches() {
+    let comboCount = 0;
+    let totalScoreThisTurn = 0;
+
+    // isProcessingフラグで多重実行を防止 (これはgameStateで管理することを推奨)
+    if (gameState.isProcessing) return;
+    gameState.isProcessing = true;
+
+    // findMatchesが盤面上のマッチを返す限りループ
+    let matches = findMatches();
+    while (matches.length > 0) {
+        comboCount++;
+        
+        // --- ▼▼▼ 演出呼び出し箇所 ▼▼▼ ---
+        // 1. コンボ演出の再生 (2コンボ目以降)
+        if (comboCount > 1) {
+            await ui.playComboEffect(comboCount);
+        }
+
+        // 2. マッチしたピースをDOM上で特定
+        const matchedCellElements = [];
+        matches.forEach(match => {
+            match.forEach(({ row, col }) => {
+                const cell = dom.gridContainer.querySelector(`.cell[style*="--row: ${row};"][style*="--col: ${col};"]`);
+                if (cell) {
+                    matchedCellElements.push(cell);
+                }
+            });
+        });
+        
+        // 3. パーティクル演出の再生
+        ui.playMatchEffect(matchedCellElements);
+        // --- ▲▲▲ 演出呼び出し箇所 ▲▲▲ ---
+
+        // (既存のマッチ処理ロジック)
+        // スコア計算、ピースの削除、盤面の更新など...
+        // ...
+        
+        // 次の連鎖判定へ
+        matches = findMatches();
+    }
+    
+    gameState.isProcessing = false;
+}
 
 // ===================================================================================
 // 内部関数 (コアロジック)
@@ -253,13 +302,13 @@ export function findMatchGroups() {
     // 形状として消費されなかった直線マッチを追加
     horizontalLines.forEach(line => {
         if (line.every(pos => !consumedCoords.has(coordToString(pos)))) {
-            finalGroups.push({ coords: line, shape: 'line', length: line.length, orientation: 'horizontal' });
+            finalGroups.push({ coords: line, shape: 'line', length: line.length, orientation: 'vertical' });
             line.forEach(pos => consumedCoords.add(coordToString(pos)));
         }
     });
     verticalLines.forEach(line => {
         if (line.every(pos => !consumedCoords.has(coordToString(pos)))) {
-            finalGroups.push({ coords: line, shape: 'line', length: line.length, orientation: 'vertical' });
+            finalGroups.push({ coords: line, shape: 'line', length: line.length, orientation: 'horizontal' });
             line.forEach(pos => consumedCoords.add(coordToString(pos)));
         }
     });

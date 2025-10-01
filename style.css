@@ -278,21 +278,54 @@ h1 {
 }
 
 /* ===================================================================================
-   コンボ表示
+   演出（エフェクト）用スタイル
    =================================================================================== */
+
+/* パーティクルの基本スタイル */
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    /* transform-originを左上基準にする */
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    transition: transform var(--particle-duration, 600ms) cubic-bezier(0.1, 0.9, 0.2, 1), 
+                opacity var(--particle-duration, 600ms) ease-out;
+    will-change: transform, opacity;
+    pointer-events: none; /* 他の操作を妨げないようにする */
+    z-index: 100;
+}
+
+/* 画面シェイクのアニメーション */
+.screen-shake {
+    animation: screen-shake-animation var(--shake-duration, 300ms) ease-in-out;
+}
+
+@keyframes screen-shake-animation {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* コンボ表示のアニメーション（既存のスタイルを上書き・強化） */
 #combo-display {
     position: absolute;
-    top: 50%;
+    /* 位置を盤面中央より少し上に調整 */
+    top: 40%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.5);
-    font-size: 48px;
+    font-size: 7vmin; /* 画面サイズに応じたフォントサイズ */
     font-weight: bold;
     color: white;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    text-shadow: 
+        0 0 5px #ffc107,
+        0 0 10px #ffc107,
+        0 0 15px #ff85a2,
+        3px 3px 6px rgba(0,0,0,0.7);
     opacity: 0;
-    transition: all 0.2s ease-out;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* バウンス感のある動き */
     pointer-events: none;
     z-index: 100;
+    white-space: nowrap; /* 改行を防ぐ */
 }
 
 #combo-display.show {
