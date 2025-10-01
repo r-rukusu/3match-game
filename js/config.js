@@ -16,8 +16,8 @@ export const CONFIG = {
     SWIPE_THRESHOLD: 10,
     INIT_LOOP_SAFETY_LIMIT: 500,
     MODES: {
-        easy:   { GRID_SIZE: 6, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 600 },
-        normal: { GRID_SIZE: 8, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 1000 },
+        easy:   { GRID_SIZE: 6, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 4000 },
+        normal: { GRID_SIZE: 8, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 4000 },
     },
     SPECIAL_PIECES: {
         LINE_BOMB: { type: 'line_bomb', className: 'line-bomb', creationCondition: { type: 'match', length: 4 } },
