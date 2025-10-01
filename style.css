@@ -1,23 +1,19 @@
-/*
+/**
  * ゲーム開発くん１号 - 画像マッチゲーム スタイルシート
  *
- * 設計思想に基づき、保守性と動作性を重視したスタイル定義です。
- * - CSSカスタムプロパティ(:root)で主要なデザイン値を一元管理し、変更を容易にしています。
- * - パフォーマンスの高いtransformプロパティを利用して、滑らかなアニメーションを実現します。
- * - vmin単位を用いることで、多様なデバイスサイズに柔軟に対応するレスポンシブデザインを採用しています。
+ * 【主な修正点】
+ * - ハイスコア表示用の .high-score-display スタイルを追加。
+ * - 自己ベスト更新時のメッセージ #new-high-score-message に、
+ * 特別感を演出するための色とアニメーションを追加。
  */
 
 :root {
-    /* --- サイズ設定 --- */
-    --board-size: 90vmin;      /* 盤面全体のサイズ */
-    --grid-size: 8;            /* JSのGRID_SIZEと合わせる */
-    --gap-size: 0.8vmin;       /* セル間の隙間 */
+    /* (変更なし) */
+    --board-size: 90vmin;
+    --grid-size: 8;
+    --gap-size: 0.8vmin;
     --border-radius: 10px;
-
-    /* --- 計算済み変数 (変更不要) --- */
     --cell-size: calc((var(--board-size) - var(--gap-size) * (var(--grid-size) + 1)) / var(--grid-size));
-
-    /* --- 色設定 --- */
     --bg-color: #7cbbdd;
     --board-bg-color: #eccdfd;
     --cell-bg-color: rgba(162, 196, 255, 0.702);
@@ -39,7 +35,7 @@ body {
     min-height: calc(var(--vh, 1vh) * 100);
     margin: 0;
     overflow-y: auto;
-    overflow-x: hidden; /* スクロールバーを非表示 */
+    overflow-x: hidden;
     padding-top: 20px;
     box-sizing: border-box;
 }
@@ -50,11 +46,9 @@ body {
     margin: 0 auto;
     padding: 20px;
     text-align: center;
-
-    /* ★★★ 修正点：ここから3行を追加 ★★★ */
-    display: flex;             /* Flexboxを有効にする */
-    flex-direction: column;    /* 子要素を縦方向に並べる */
-    align-items: center;       /* 子要素を水平方向の中央に揃える */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 h1 {
@@ -62,15 +56,15 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* モード選択ボタンのコンテナ */
 #mode-selection {
     display: flex;
-    gap: 15px; /* ボタン間の隙間 */
+    gap: 15px;
     justify-content: center;
     margin-top: 20px;
 }
+
 /* ===================================================================================
-   画面ごとの表示制御 (start, game, game-over)
+   画面ごとの表示制御
    =================================================================================== */
 .screen {
     display: none;
@@ -83,22 +77,57 @@ h1 {
     display: none !important;
 }
 
-/* 特典画像のスタイル */
 #clear-bonus-image {
-    max-width: 80%; /* 幅がコンテナをはみ出さないように */
+    max-width: 80%;
     height: auto;
     margin-top: 20px;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
+/* ===================================================================================
+   ハイスコア表示のスタイル ★★★ ここから追加 ★★★
+   =================================================================================== */
+.high-score-display {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text-color);
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 8px 15px;
+    border-radius: var(--border-radius);
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+#new-high-score-message {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffc107; /* 目を引く黄色 */
+    text-shadow: 0 0 8px rgba(0,0,0,0.5);
+    margin: 15px 0 0 0;
+    animation: new-score-animation 1.5s ease-in-out infinite;
+}
+
+/* ハイスコア更新時のアニメーション */
+@keyframes new-score-animation {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+/* ★★★ 追加ここまで ★★★ */
+
+
 #game-over-screen h2 {
     font-size: 32px;
 }
-
 #game-over-screen p {
     font-size: 24px;
-    margin: 20px 0;
+    margin: 10px 0; /* マージンを調整 */
 }
 
 .button {
@@ -112,6 +141,7 @@ h1 {
     cursor: pointer;
     text-decoration: none;
     transition: background-color 0.2s;
+    margin-top: 15px;
 }
 
 .button:hover {
@@ -119,7 +149,7 @@ h1 {
 }
 
 /* ===================================================================================
-   ゲーム画面UI (スコア、タイマーなど)
+   ゲーム画面UI
    =================================================================================== */
 #game-ui {
     display: flex;
@@ -127,16 +157,15 @@ h1 {
     margin-bottom: 15px;
     font-size: 24px;
     font-weight: bold;
-
-    flex-wrap: wrap;          /* 要素の折り返しを許可する */
-    gap: 10px;                /* 要素間の隙間を設定（折り返し時に有効） */
-    width: var(--board-size); /* 盤面の幅とUI全体の幅を合わせる */
-    max-width: 100%;          /* 親要素からはみ出さないようにする */
+    flex-wrap: wrap;
+    gap: 10px;
+    width: var(--board-size);
+    max-width: 100%;
 }
 
 .ui-element {
     background: var(--board-bg-color);
-    color: white;
+    color: var(--text-color);
     padding: 10px 15px;
     border-radius: 5px;
     flex-grow: 1;
@@ -160,8 +189,7 @@ h1 {
 }
 
 /* ===================================================================================
-   ゲーム盤面 (Grid Container) とセル (Cell)
-   ★ JavaScriptの `position: absolute` に対応したスタイル
+   ゲーム盤面とセル
    =================================================================================== */
 #grid-container {
     width: var(--board-size);
@@ -170,56 +198,83 @@ h1 {
     background-color: var(--board-bg-color);
     padding: var(--gap-size);
     border-radius: var(--border-radius);
-    position: relative; /* ★重要: position:absolute の基準点となります */
+    position: relative;
     margin: 0 auto;
-    /* スマホでの意図しないスクロールを防止 */
     touch-action: none;
 }
 
 .cell {
-    /* ★重要: position:absolute と transform を使ったレスポンシブ対応 */
     position: absolute;
     width: var(--cell-size);
     height: var(--cell-size);
     background-color: var(--cell-bg-color);
     border-radius: 8px;
     box-sizing: border-box;
-
-    --translate-x: calc(var(--col) * (var(--cell-size) + var(--gap-size)));
-    --translate-y: calc(var(--row) * (var(--cell-size) + var(--gap-size)));
-    --scale-factor: 1;
-    
-    /* JavaScriptから --row と --col を受け取るための初期値を設定 */
     --row: 0;
     --col: 0;
-
-    /* * transformで位置を計算。
-     * これにより、ウィンドウサイズが変わって --cell-size や --gap-size が変更されると、
-     * ブラウザが自動的に位置を再計算してくれます。
-     */
-    transform: translate(var(--translate-x),var(--translate-y)) scale(var(--scale-factor));
-    
-    /* アニメーションの対象にtransformを追加 */
+    --translate-x: calc(var(--col) * (var(--cell-size) + var(--gap-size)));
+    --translate-y: calc(var(--row) * (var(--cell-size) + var(--gap-size)));
+    transform: translate(var(--translate-x), var(--translate-y));
     transition: transform 0.3s ease, opacity 0.3s ease;
+    will-change: transform, opacity;
 }
 
 .cell img {
     width: 100%;
     height: 100%;
-    user-select: none; /* 画像のドラッグ選択を防止 */
-    pointer-events: none; /* 画像へのイベントを親のcellに透過 */
+    user-select: none;
+    pointer-events: none;
 }
 
-/* 選択されたセルのスタイル */
+.cell.bomb::before {
+    content: '💣';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: calc(var(--cell-size) * 0.6);
+    text-shadow: 0 0 5px rgba(0,0,0,0.7);
+    animation: pulse-emoji 1.5s infinite;
+    z-index: 1;
+}
+
+.cell.cross-bomb::before {
+    content: '💥';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: calc(var(--cell-size) * 0.7);
+    text-shadow: 0 0 5px rgba(255, 165, 0, 0.9);
+    animation: pulse-emoji 1.2s infinite;
+    z-index: 1;
+}
+
+.cell.line-bomb-vertical::before,
+.cell.line-bomb-horizontal::before {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: calc(var(--cell-size) * 0.7);
+    text-shadow: 0 0 5px rgba(0,0,0,0.7);
+    z-index: 1;
+    animation: pulse-emoji 1.8s infinite;
+}
+
+.cell.line-bomb-vertical::before { content: '↕️'; }
+.cell.line-bomb-horizontal::before { content: '↔️'; }
+
+@keyframes pulse-emoji {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
 .cell.selected {
     outline: 3px solid #f90;
-    --scale-factor: 1.1;
+    transform: translate(var(--translate-x), var(--translate-y)) scale(1.1);
 }
 
-/* 消えるときのアニメーション */
 .cell.fade-out {
     opacity: 0;
-    transform: scale(0.5);
+    transform: translate(var(--translate-x), var(--translate-y)) scale(0.5);
 }
 
 /* ===================================================================================
@@ -236,7 +291,7 @@ h1 {
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     opacity: 0;
     transition: all 0.2s ease-out;
-    pointer-events: none; /* 操作の邪魔にならないように */
+    pointer-events: none;
     z-index: 100;
 }
 

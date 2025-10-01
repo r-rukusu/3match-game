@@ -1,0 +1,473 @@
+/**
+ * ゲーム開発くん１号 - 画像マッチゲーム (v1.1 安定版)
+ *
+ * 【主な機能】
+ * - モード選択 (かんたん / ふつう)
+ * - 多様なスペシャルピース (ラインボム, ボム, 十字ボム)
+ * - 4つ消し: ラインボム (縦/横)
+ * - L字/T字消し: ボム (3x3)
+ * - 十字消し: 十字ボム (縦横列)
+ * - ハイスコア記録機能 (ブラウザ保存)
+ * - パフォーマンス最適化済み
+ */
+function setVhProperty() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+window.addEventListener('resize', setVhProperty);
+setVhProperty();
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ===================================================================================
+    // 設定の一元管理 (CONFIG)
+    // ===================================================================================
+    const CONFIG = {
+        STORAGE_KEY: 'matchGameHighScore',
+        LEVEL_UP_EXP_BASE: 100,
+        CLEAR_IMAGE_NAME: 'clear.png',
+        IMAGE_NAMES: ['1.png', '2.png', '3.png', '4.png', '5.png'],
+        IMAGE_PATH: './img/',
+        DUMMY_IMAGE_SRC: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+        ANIMATION_DURATION: 300,
+        COMBO_BONUS_MULTIPLIER: 0.1,
+        SWIPE_THRESHOLD: 10,
+        INIT_LOOP_SAFETY_LIMIT: 500,
+        MODES: {
+            easy:   { GRID_SIZE: 6, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 600 },
+            normal: { GRID_SIZE: 8, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 1000 },
+        },
+        SPECIAL_PIECES: {
+            LINE_BOMB: { type: 'line_bomb', className: 'line-bomb', creationCondition: { type: 'match', length: 4 } },
+            BOMB: { type: 'bomb', className: 'bomb', creationCondition: { type: 'shape', shape: ['L', 'T'] } },
+            CROSS_BOMB: { type: 'cross_bomb', className: 'cross-bomb', creationCondition: { type: 'shape', shape: ['cross'] } },
+        }
+    };
+
+    // ===================================================================================
+    // DOM要素の取得
+    // ===================================================================================
+    const dom = {
+        highScoreStart: document.getElementById('high-score-start'),
+        highScoreEnd: document.getElementById('high-score-end'),
+        newHighScoreMessage: document.getElementById('new-high-score-message'),
+        modeButtons: document.querySelectorAll('.mode-button'),
+        restartButton: document.getElementById('restart-button'),
+        startScreen: document.getElementById('start-screen'),
+        gameScreen: document.getElementById('game-screen'),
+        gameOverScreen: document.getElementById('game-over-screen'),
+        gameOverTitle: document.getElementById('game-over-title'),
+        gridContainer: document.getElementById('grid-container'),
+        score: document.getElementById('score'),
+        level: document.getElementById('level'),
+        timeLeft: document.getElementById('time-left'),
+        expBar: document.getElementById('exp-bar'),
+        finalScore: document.getElementById('final-score'),
+        comboDisplay: document.getElementById('combo-display'),
+        clearBonusImage: document.getElementById('clear-bonus-image'),
+    };
+
+    // ===================================================================================
+    // 状態の集中管理 (gameState)
+    // ===================================================================================
+    let gameState = {};
+    function resetGameState(mode = 'normal') {
+        const modeConfig = CONFIG.MODES[mode];
+        gameState = {
+            grid: [], cellElements: [], score: 0, level: 1, exp: 0,
+            timeLeft: modeConfig.GAME_TIME_SECONDS,
+            combo: 0, isProcessing: false, selectedCell: null, timerId: null,
+            currentMode: mode, gridSize: modeConfig.GRID_SIZE,
+            highScore: gameState.highScore || 0,
+        };
+    }
+
+    // ===================================================================================
+    // 初期化処理
+    // ===================================================================================
+    function init() {
+        dom.modeButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                startGame(event.currentTarget.dataset.mode);
+            });
+        });
+        dom.restartButton.addEventListener('click', () => {
+            dom.newHighScoreMessage.classList.add('hidden');
+            // スタート画面に戻る前にハイスコア表示を更新
+            dom.highScoreStart.textContent = gameState.highScore;
+            showScreen('start');
+        });
+        
+        loadHighScore();
+        showScreen('start');
+    }
+
+    // ===================================================================================
+    // ゲームフロー制御
+    // ===================================================================================
+    function startGame(mode) {
+        resetGameState(mode);
+        document.documentElement.style.setProperty('--grid-size', gameState.gridSize);
+        dom.clearBonusImage.classList.add('hidden');
+        showScreen('game');
+        let loopCount = 0;
+        do {
+            createGridData();
+            if (loopCount++ > CONFIG.INIT_LOOP_SAFETY_LIMIT) {
+                console.warn('初期盤面のマッチ解消ループが上限に到達しました。');
+                break;
+            }
+        } while (findMatchGroups().length > 0);
+        renderGrid();
+        updateUI();
+        startTimer();
+    }
+
+    function gameOver() {
+        stopTimer();
+        const modeConfig = CONFIG.MODES[gameState.currentMode];
+        
+        if (gameState.score > gameState.highScore) {
+            gameState.highScore = gameState.score;
+            saveHighScore(gameState.highScore);
+            dom.newHighScoreMessage.classList.remove('hidden');
+        }
+
+        if (gameState.score >= modeConfig.CLEAR_SCORE_THRESHOLD) {
+            dom.gameOverTitle.textContent = 'Game Clear!';
+            dom.clearBonusImage.src = `${CONFIG.IMAGE_PATH}${CONFIG.CLEAR_IMAGE_NAME}`;
+            dom.clearBonusImage.classList.remove('hidden');
+        } else {
+            dom.gameOverTitle.textContent = 'Game Over';
+            dom.clearBonusImage.classList.add('hidden');
+        }
+        dom.finalScore.textContent = gameState.score;
+        dom.highScoreEnd.textContent = gameState.highScore;
+        showScreen('gameOver');
+    }
+
+    // ===================================================================================
+    // 画面表示・UI更新・タイマー
+    // ===================================================================================
+    function showScreen(screenName) {
+        dom.startScreen.classList.remove('active');
+        dom.gameScreen.classList.remove('active');
+        dom.gameOverScreen.classList.remove('active');
+        if (screenName === 'start') dom.startScreen.classList.add('active');
+        else if (screenName === 'game') dom.gameScreen.classList.add('active');
+        else if (screenName === 'gameOver') dom.gameOverScreen.classList.add('active');
+    }
+
+    function startTimer() {
+        if (gameState.timerId) clearInterval(gameState.timerId);
+        gameState.timerId = setInterval(() => {
+            gameState.timeLeft--;
+            updateUI();
+            if (gameState.timeLeft <= 0) gameOver();
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(gameState.timerId);
+        gameState.timerId = null;
+    }
+
+    function updateUI() {
+        dom.score.textContent = gameState.score;
+        dom.level.textContent = gameState.level;
+        dom.timeLeft.textContent = gameState.timeLeft;
+        const requiredExp = CONFIG.LEVEL_UP_EXP_BASE * gameState.level;
+        const expPercentage = (gameState.exp / requiredExp) * 100;
+        dom.expBar.style.width = `${expPercentage}%`;
+    }
+    
+    // ===================================================================================
+    // ハイスコア管理
+    // ===================================================================================
+    function loadHighScore() {
+        try {
+            const score = localStorage.getItem(CONFIG.STORAGE_KEY);
+            gameState.highScore = parseInt(score, 10) || 0;
+        } catch (error) {
+            console.error('ハイスコアの読み込みに失敗しました:', error);
+            gameState.highScore = 0;
+        }
+        dom.highScoreStart.textContent = gameState.highScore;
+    }
+
+    function saveHighScore(score) {
+        try {
+            localStorage.setItem(CONFIG.STORAGE_KEY, score);
+        } catch (error) {
+            console.error('ハイスコアの保存に失敗しました:', error);
+        }
+    }
+
+    // ===================================================================================
+    // 盤面データと描画
+    // ===================================================================================
+    function createGridData() {
+        gameState.grid = [];
+        for (let row = 0; row < gameState.gridSize; row++) {
+            gameState.grid[row] = [];
+            for (let col = 0; col < gameState.gridSize; col++) {
+                gameState.grid[row][col] = { type: 'normal', image: getRandomImageName() };
+            }
+        }
+    }
+
+    function renderGrid() {
+        dom.gridContainer.innerHTML = '';
+        gameState.cellElements = [];
+        gameState.grid.forEach((row, rowIndex) => {
+            gameState.cellElements[rowIndex] = [];
+            row.forEach((piece, colIndex) => {
+                const cell = createCell(rowIndex, colIndex, piece);
+                dom.gridContainer.appendChild(cell);
+                gameState.cellElements[rowIndex][colIndex] = cell;
+            });
+        });
+    }
+
+    function createCell(row, col, piece) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        if (piece.type !== 'normal') {
+            const pieceConfig = Object.values(CONFIG.SPECIAL_PIECES).find(p => p.type === piece.type);
+            if (pieceConfig) {
+                cell.classList.add(pieceConfig.className);
+                if (piece.type === 'line_bomb' && piece.orientation) {
+                    cell.classList.add(`${pieceConfig.className}-${piece.orientation}`);
+                }
+            }
+        }
+        cell.dataset.row = row;
+        cell.dataset.col = col;
+        updateCellPosition(cell, row, col);
+        const img = document.createElement('img');
+        img.src = `${CONFIG.IMAGE_PATH}${piece.image}`;
+        img.onerror = () => { img.src = CONFIG.DUMMY_IMAGE_SRC; };
+        cell.appendChild(img);
+        cell.addEventListener('click', handleCellClick);
+        cell.addEventListener('touchstart', handleTouchStart, { passive: false });
+        cell.addEventListener('touchmove', handleTouchMove, { passive: false });
+        cell.addEventListener('touchend', handleTouchEnd);
+        return cell;
+    }
+
+    function updateCellPosition(cell, row, col) {
+        cell.style.setProperty('--row', row);
+        cell.style.setProperty('--col', col);
+    }
+
+    // ===================================================================================
+    // ユーザー入力処理
+    // ===================================================================================
+    let touchStartCoords = null;
+    function handleCellClick(event) { handleSelection(event.currentTarget); }
+    function handleTouchStart(event) { event.preventDefault(); touchStartCoords = { x: event.touches[0].clientX, y: event.touches[0].clientY, target: event.currentTarget }; }
+    function handleTouchMove(event) { event.preventDefault(); }
+    function handleTouchEnd(event) {
+        if (!touchStartCoords) return;
+        const dx = event.changedTouches[0].clientX - touchStartCoords.x;
+        const dy = event.changedTouches[0].clientY - touchStartCoords.y;
+        if (Math.abs(dx) < CONFIG.SWIPE_THRESHOLD && Math.abs(dy) < CONFIG.SWIPE_THRESHOLD) {
+            handleSelection(touchStartCoords.target);
+        } else {
+            const { row, col } = getCellCoords(touchStartCoords.target);
+            let targetRow = row, targetCol = col;
+            if (Math.abs(dx) > Math.abs(dy)) { targetCol += (dx > 0) ? 1 : -1; } else { targetRow += (dy > 0) ? 1 : -1; }
+            if (isValidCoords(targetRow, targetCol)) {
+                handleSwap(touchStartCoords.target, getCellElement(targetRow, targetCol));
+            }
+        }
+        touchStartCoords = null;
+    }
+
+    async function handleSelection(cellElement) {
+        if (gameState.isProcessing) return;
+        if (!gameState.selectedCell) {
+            cellElement.classList.add('selected');
+            gameState.selectedCell = cellElement;
+        } else {
+            if (gameState.selectedCell === cellElement) {
+                gameState.selectedCell.classList.remove('selected');
+                gameState.selectedCell = null;
+                return;
+            }
+            if (areAdjacent(gameState.selectedCell, cellElement)) {
+                await handleSwap(gameState.selectedCell, cellElement);
+            }
+            gameState.selectedCell.classList.remove('selected');
+            gameState.selectedCell = null;
+        }
+    }
+
+    // ===================================================================================
+    // コアロジック
+    // ===================================================================================
+    async function handleSwap(cellA, cellB) {
+        if (gameState.isProcessing || !cellA || !cellB) return;
+        gameState.isProcessing = true;
+        const { row: r1, col: c1 } = getCellCoords(cellA);
+        const { row: r2, col: c2 } = getCellCoords(cellB);
+        const swapInfo = { coords: [`${r1}-${c1}`, `${r2}-${c2}`] };
+        await swapAnimation(cellA, cellB);
+        swapGridData(cellA, cellB);
+        const matchGroups = findMatchGroups();
+        if (matchGroups.length > 0) {
+            await processMatches(matchGroups, swapInfo);
+        } else {
+            await sleep(100);
+            await swapAnimation(cellA, cellB);
+            swapGridData(cellA, cellB);
+        }
+        gameState.isProcessing = false;
+    }
+
+    async function processMatches(initialMatchGroups, swapInfo = null) {
+        const piecesToCreate = [];
+        for (const group of initialMatchGroups) {
+            const image = gameState.grid[group.coords[0].row][group.coords[0].col]?.image;
+            if (!image) continue;
+            for (const pieceConfig of Object.values(CONFIG.SPECIAL_PIECES)) {
+                const cond = pieceConfig.creationCondition;
+                let isMatch = false;
+                if (cond.type === 'shape' && cond.shape.includes(group.shape)) {
+                    isMatch = true;
+                } else if (cond.type === 'match' && group.length === cond.length && group.shape === 'line') {
+                    isMatch = true;
+                }
+                if (isMatch) {
+                    const creationCoord = group.intersection || (swapInfo ? group.coords.find(c => swapInfo.coords.includes(`${c.row}-${c.col}`)) : null) || group.coords[Math.floor(group.length / 2)];
+                    piecesToCreate.push({ ...creationCoord, image, type: pieceConfig.type, className: pieceConfig.className, orientation: group.orientation });
+                    break;
+                }
+            }
+        }
+        let allClearedCoords = new Set();
+        let coordsToProcess = new Set(initialMatchGroups.flatMap(g => g.coords.map(c => `${c.row}-${c.col}`)));
+        let processedSpecials = new Set();
+        while (coordsToProcess.size > 0) {
+            const currentCoordStr = coordsToProcess.values().next().value;
+            coordsToProcess.delete(currentCoordStr);
+            if (allClearedCoords.has(currentCoordStr) || processedSpecials.has(currentCoordStr)) continue;
+            allClearedCoords.add(currentCoordStr);
+            const [row, col] = currentCoordStr.split('-').map(Number);
+            const piece = gameState.grid[row]?.[col];
+            if (piece && piece.type !== 'normal') {
+                processedSpecials.add(currentCoordStr);
+                switch (piece.type) {
+                    case 'bomb':
+                        for (let r = row - 1; r <= row + 1; r++) { for (let c = col - 1; c <= col + 1; c++) { if (isValidCoords(r, c)) coordsToProcess.add(`${r}-${c}`); } }
+                        break;
+                    case 'cross_bomb':
+                        for (let i = 0; i < gameState.gridSize; i++) { if (isValidCoords(row, i)) coordsToProcess.add(`${row}-${i}`); if (isValidCoords(i, col)) coordsToProcess.add(`${i}-${col}`); }
+                        break;
+                    case 'line_bomb':
+                        for (let i = 0; i < gameState.gridSize; i++) {
+                            if (piece.orientation === 'vertical') { if (isValidCoords(i, col)) coordsToProcess.add(`${i}-${col}`); }
+                            else { if (isValidCoords(row, i)) coordsToProcess.add(`${row}-${i}`); }
+                        }
+                        break;
+                }
+            }
+        }
+        piecesToCreate.forEach(p => allClearedCoords.delete(`${p.row}-${p.col}`));
+        if (allClearedCoords.size > 0) {
+            gameState.combo++;
+            showCombo(gameState.combo);
+            gameState.score += calculatePoints(Array.from(allClearedCoords));
+            gameState.exp += allClearedCoords.size;
+            await removeMatchedCells(Array.from(allClearedCoords));
+            piecesToCreate.forEach(p => {
+                gameState.grid[p.row][p.col] = { type: p.type, image: p.image, orientation: p.orientation };
+                const cellElement = getCellElement(p.row, p.col);
+                if (cellElement) {
+                    Object.values(CONFIG.SPECIAL_PIECES).forEach(spec => cellElement.classList.remove(spec.className));
+                    cellElement.classList.add(p.className);
+                    cellElement.classList.remove(`${p.className}-vertical`, `${p.className}-horizontal`);
+                    if (p.orientation) cellElement.classList.add(`${p.className}-${p.orientation}`);
+                }
+            });
+            await dropAndRefillCells();
+            updateUI();
+            checkLevelUp();
+            const newMatchGroups = findMatchGroups();
+            if (newMatchGroups.length > 0) {
+                await processMatches(newMatchGroups);
+            } else {
+                hideCombo();
+                gameState.combo = 0;
+            }
+        }
+    }
+
+    function findMatchGroups() {
+        const { grid, gridSize } = gameState;
+        const finalGroups = [];
+        let consumedCoords = new Set();
+        const coordToString = ({row, col}) => `${row}-${col}`;
+        const horizontalLines = [];
+        const verticalLines = [];
+        for (let r = 0; r < gridSize; r++) { for (let c = 0; c < gridSize; c++) { if (!grid[r][c]) continue; const image = grid[r][c].image; if (c <= gridSize - 3 && grid[r][c+1]?.image === image && grid[r][c+2]?.image === image) { const line = []; let len = c; while(len < gridSize && grid[r][len]?.image === image) { line.push({row: r, col: len}); len++; } horizontalLines.push(line); c = len - 1; } } }
+        for (let c = 0; c < gridSize; c++) { for (let r = 0; r < gridSize; r++) { if (!grid[r][c]) continue; const image = grid[r][c].image; if (r <= gridSize - 3 && grid[r+1][c]?.image === image && grid[r+2][c]?.image === image) { const line = []; let len = r; while(len < gridSize && grid[len][c]?.image === image) { line.push({row: len, col: c}); len++; } verticalLines.push(line); r = len - 1; } } }
+        const intersections = new Map();
+        horizontalLines.forEach((hLine, hIndex) => hLine.forEach(pos => { const key = coordToString(pos); if (!intersections.has(key)) intersections.set(key, {}); intersections.get(key).h = hIndex; }));
+        verticalLines.forEach((vLine, vIndex) => vLine.forEach(pos => { const key = coordToString(pos); if (!intersections.has(key)) intersections.set(key, {}); intersections.get(key).v = vIndex; }));
+        for (const [key, {h, v}] of intersections) {
+            if (h === undefined || v === undefined || consumedCoords.has(key)) continue;
+            const [row, col] = key.split('-').map(Number);
+            const hLine = horizontalLines[h];
+            const vLine = verticalLines[v];
+            const allShapeCoords = new Set([...hLine, ...vLine].map(coordToString));
+            if ([...allShapeCoords].some(c => consumedCoords.has(c))) continue;
+            const up = vLine.some(p => p.row < row), down = vLine.some(p => p.row > row), left = hLine.some(p => p.col < col), right = hLine.some(p => p.col > col);
+            const directions = [up, down, left, right].filter(Boolean).length;
+            let shape = 'line';
+            if (directions === 4) shape = 'cross';
+            else if (directions === 3) shape = 'T';
+            else if (directions === 2 && (up || down) && (left || right)) shape = 'L';
+            if (shape !== 'line') {
+                finalGroups.push({ coords: [...new Set([...hLine, ...vLine])], shape: shape, intersection: {row, col} });
+                allShapeCoords.forEach(c => consumedCoords.add(c));
+            }
+        }
+        horizontalLines.forEach(line => {
+            if (line.every(pos => !consumedCoords.has(coordToString(pos)))) {
+                finalGroups.push({ coords: line, shape: 'line', length: line.length, orientation: 'horizontal' });
+                line.forEach(pos => consumedCoords.add(coordToString(pos)));
+            }
+        });
+        verticalLines.forEach(line => {
+            if (line.every(pos => !consumedCoords.has(coordToString(pos)))) {
+                finalGroups.push({ coords: line, shape: 'line', length: line.length, orientation: 'vertical' });
+                line.forEach(pos => consumedCoords.add(coordToString(pos)));
+            }
+        });
+        return finalGroups;
+    }
+
+    // ===================================================================================
+    // ヘルパー関数群
+    // ===================================================================================
+    async function removeMatchedCells(matchedCoords) { const promises = matchedCoords.map(coord => { const [row, col] = coord.split('-').map(Number); const cell = getCellElement(row, col); if (cell) { cell.classList.add('fade-out'); return sleep(CONFIG.ANIMATION_DURATION).then(() => { if(cell.parentNode) cell.remove(); gameState.grid[row][col] = null; gameState.cellElements[row][col] = null; }); } return Promise.resolve(); }); await Promise.all(promises); }
+    async function dropAndRefillCells() { const { gridSize } = gameState; const fragment = document.createDocumentFragment(); for (let c = 0; c < gridSize; c++) { let writeRow = gridSize - 1; for (let r = gridSize - 1; r >= 0; r--) { if (gameState.grid[r][c] !== null) { if (writeRow !== r) { gameState.grid[writeRow][c] = gameState.grid[r][c]; gameState.cellElements[writeRow][c] = gameState.cellElements[r][c]; gameState.grid[r][c] = null; gameState.cellElements[r][c] = null; const cell = getCellElement(writeRow, c); if (cell) { cell.dataset.row = writeRow; updateCellPosition(cell, writeRow, c); } } writeRow--; } } } for (let r = 0; r < gridSize; r++) { for (let c = 0; c < gridSize; c++) { if (gameState.grid[r][c] === null) { const newPiece = { type: 'normal', image: getRandomImageName() }; gameState.grid[r][c] = newPiece; const cell = createCell(r, c, newPiece); fragment.appendChild(cell); gameState.cellElements[r][c] = cell; } } } dom.gridContainer.appendChild(fragment); await sleep(CONFIG.ANIMATION_DURATION); }
+    function getRandomImageName() { return CONFIG.IMAGE_NAMES[Math.floor(Math.random() * CONFIG.IMAGE_NAMES.length)]; }
+    function getCellCoords(cell) { return { row: parseInt(cell.dataset.row, 10), col: parseInt(cell.dataset.col, 10) }; }
+    function getCellElement(row, col) { return isValidCoords(row, col) ? gameState.cellElements[row][col] : null; }
+    function areAdjacent(cellA, cellB) { const { row: r1, col: c1 } = getCellCoords(cellA); const { row: r2, col: c2 } = getCellCoords(cellB); return Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1; }
+    function isValidCoords(row, col) { const { gridSize } = gameState; return row >= 0 && row < gridSize && col >= 0 && col < gridSize; }
+    function swapGridData(cellA, cellB) { const { row: r1, col: c1 } = getCellCoords(cellA); const { row: r2, col: c2 } = getCellCoords(cellB);[gameState.grid[r1][c1], gameState.grid[r2][c2]] = [gameState.grid[r2][c2], gameState.grid[r1][c1]];[gameState.cellElements[r1][c1], gameState.cellElements[r2][c2]] = [gameState.cellElements[r2][c2], gameState.cellElements[r1][c1]]; }
+    function swapAnimation(cellA, cellB) { return new Promise(resolve => { const { row: r1, col: c1 } = getCellCoords(cellA); const { row: r2, col: c2 } = getCellCoords(cellB); updateCellPosition(cellA, r2, c2); updateCellPosition(cellB, r1, c1); cellA.dataset.row = r2; cellA.dataset.col = c2; cellB.dataset.row = r1; cellB.dataset.col = c1; setTimeout(resolve, CONFIG.ANIMATION_DURATION); }); }
+    function calculatePoints(matches) { const basePoints = matches.length * 10; const comboBonus = Math.floor(basePoints * (gameState.combo * CONFIG.COMBO_BONUS_MULTIPLIER)); return basePoints + comboBonus; }
+    function checkLevelUp() { const requiredExp = CONFIG.LEVEL_UP_EXP_BASE * gameState.level; if (gameState.exp >= requiredExp) { gameState.level++; gameState.exp -= requiredExp; } }
+    function showCombo(combo) { if (combo < 2) return; dom.comboDisplay.textContent = `${combo} COMBO!`; dom.comboDisplay.classList.add('show'); }
+    function hideCombo() { dom.comboDisplay.classList.remove('show'); }
+    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    
+    // ===================================================================================
+    // ゲームの起動
+    // ===================================================================================
+    init();
+});
