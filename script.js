@@ -31,10 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 設定の一元管理 (CONFIG)
     // ===================================================================================
     const CONFIG = {
-        GRID_SIZE: 8,
-        GAME_TIME_SECONDS: 60,
         LEVEL_UP_EXP_BASE: 100,
-        CLEAR_SCORE_THRESHOLD: 2000,
         CLEAR_IMAGE_NAME: '5_clear.png',
         IMAGE_NAMES: ['1.png', '2.png', '3.png', '4.png', '5.png'],
         IMAGE_PATH: './img/',
@@ -43,19 +40,33 @@ document.addEventListener('DOMContentLoaded', () => {
         COMBO_BONUS_MULTIPLIER: 0.1,
         SWIPE_THRESHOLD: 10,
         INIT_LOOP_SAFETY_LIMIT: 500,
+
+                // モード別設定
+        MODES: {
+            easy: {
+                GRID_SIZE: 6,
+                GAME_TIME_SECONDS: 60,
+                CLEAR_SCORE_THRESHOLD: 2000,
+            },
+            normal: {
+                GRID_SIZE: 8,
+                GAME_TIME_SECONDS: 60,
+                CLEAR_SCORE_THRESHOLD: 2000,
+            }
+        }
     };
 
     // ===================================================================================
     // DOM要素の取得
     // ===================================================================================
     const dom = {
+        modeButtons: document.querySelectorAll('.mode-button'),
+        restartButton: document.getElementById('restart-button'),
         gameContainer: document.getElementById('game-container'),
         startScreen: document.getElementById('start-screen'),
         gameScreen: document.getElementById('game-screen'),
         gameOverScreen: document.getElementById('game-over-screen'),
         gameOverTitle: document.getElementById('game-over-title'),
-        startButton: document.getElementById('start-button'),
-        restartButton: document.getElementById('restart-button'),
         gridContainer: document.getElementById('grid-container'),
         score: document.getElementById('score'),
         level: document.getElementById('level'),
@@ -73,45 +84,50 @@ document.addEventListener('DOMContentLoaded', () => {
     // ★修正点: DOM要素への参照を保持する2次元配列を追加
     // let cellElements = [];
 
-    function resetGameState() {
+    function resetGameState(mode = 'normal') { // デフォルトモードを設定
+        const modeConfig = CONFIG.MODES[mode];
         gameState = {
-            grid: [],
-            cellElements: [],
-            score: 0,
-            level: 1,
-            exp: 0,
-            timeLeft: CONFIG.GAME_TIME_SECONDS,
-            combo: 0,
-            isProcessing: false,
-            selectedCell: null,
-            timerId: null,
+            grid: [], cellElements: [], score: 0, level: 1, exp: 0,
+            timeLeft: modeConfig.GAME_TIME_SECONDS, // モード設定を反映
+            combo: 0, isProcessing: false, selectedCell: null, timerId: null,
+            currentMode: mode, // ★追加: 現在のモードを保持
+            gridSize: modeConfig.GRID_SIZE, // ★追加: 現在のグリッドサイズを保持
         };
-        // ★修正点: DOM参照配列もリセット
     }
 
     // ===================================================================================
     // 初期化処理
     // ===================================================================================
     function init() {
-        dom.startButton.addEventListener('click', startGame);
-        dom.restartButton.addEventListener('click', startGame);
+        // モード選択ボタンにイベントリスナーを設定
+        dom.modeButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const selectedMode = event.currentTarget.dataset.mode;
+                startGame(selectedMode);
+            });
+        });
+
+        // リスタートボタンは直前のモードで再開
+        dom.restartButton.addEventListener('click', () => {
         showScreen('start');
+        });
     }
 
     // ===================================================================================
     // ゲームフロー制御 (開始、終了)
     // ===================================================================================
-    function startGame() {
-        resetGameState();
+    function startGame(mode) {
+        resetGameState(mode);
+        document.documentElement.style.setProperty('--grid-size', gameState.gridSize);
         dom.clearBonusImage.classList.add('hidden');
         showScreen('game');
         let loopCount = 0;
 
         do {
             createGridData();
-            matches = findMatches(); 
-            console.log(`生成試行 #${loopCount + 1}: マッチを ${matches.length} 件検出しました。`);
-            if (matches.length > 0) {
+            findMatches(); 
+            console.log(`生成試行 #${loopCount + 1}: マッチを ${findMatches().length} 件検出しました。`);
+            if (findMatches().length > 0) {
             console.log("マッチが見つかったため、盤面を再生成します...");
             }
             if (loopCount++ > CONFIG.INIT_LOOP_SAFETY_LIMIT){
@@ -127,12 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function gameOver() {
         stopTimer();
-        if  (gameState.score >= CONFIG.CLEAR_SCORE_THRESHOLD) {
-            dom.gameOverTitle.textContent  = 'ゲームクリア！';
+        const modeConfig = CONFIG.MODES[gameState.currentMode];
+
+        if (gameState.score >= modeConfig.CLEAR_SCORE_THRESHOLD) { // モード設定で判定
+            dom.gameOverTitle.textContent = 'Game Clear!';
             dom.clearBonusImage.src = `${CONFIG.IMAGE_PATH}${CONFIG.CLEAR_IMAGE_NAME}`;
             dom.clearBonusImage.classList.remove('hidden');
         } else {
-            dom.gameOverTitle.textContent  =  'ゲームオーバー';
+            dom.gameOverTitle.textContent = 'Game Over';
             dom.clearBonusImage.classList.add('hidden');
         }
 
@@ -192,9 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createGridData() {
         gameState.grid = [];
-        for (let row = 0; row < CONFIG.GRID_SIZE; row++) {
+        // gameStateからグリッドサイズを取得
+        for (let row = 0; row < gameState.gridSize; row++) {
             gameState.grid[row] = [];
-            for (let col = 0; col < CONFIG.GRID_SIZE; col++) {
+            for (let col = 0; col < gameState.gridSize; col++) {
                 gameState.grid[row][col] = getRandomImageName();
             }
         }
@@ -364,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function findMatches() {
         const matchedCells = new Set();
         const { grid } = gameState;
-        const size = CONFIG.GRID_SIZE;
+        const size = gameState.gridSize;
 
         for (let r = 0; r < size; r++) {
             for (let c = 0; c < size - 2; c++) {
@@ -420,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // script.js の dropAndRefillCells 関数を、以下に差し替えてください。
 
     async function dropAndRefillCells() {
-        const size = CONFIG.GRID_SIZE;
+        const size = gameState.gridSize;
         const animationPromises = [];
         const fragment = document.createDocumentFragment();
 
@@ -531,7 +550,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function isValidCoords(row, col) {
-        return row >= 0 && row < CONFIG.GRID_SIZE && col >= 0 && col < CONFIG.GRID_SIZE;
+        const size = gameState.gridSize;
+        return row >= 0 && row < size && col >= 0 && col < size;
     }
 
     // ★修正点: cellElementsの参照もスワップする
