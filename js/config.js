@@ -39,7 +39,7 @@ export const CONFIG = {
         },
         // 画面シェイクの設定
         screenShake: {
-            duration: 300 // アニメーション時間 (ms)
+            duration: 600 // アニメーション時間 (ms)
         },
         // コンボ表示の設定
         combo: {

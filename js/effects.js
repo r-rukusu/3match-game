@@ -33,7 +33,7 @@ export function playParticleEffect(cellElement) {
     const x = rect.left - containerRect.left + rect.width / 2;
     const y = rect.top - containerRect.top + rect.height / 2;
 
-    for (let i = 0; i < config.effects.particle.count; i++) {
+    for (let i = 0; i < CONFIG.effects.particle.count; i++) {
         createParticle(x, y);
     }
 }
@@ -41,24 +41,24 @@ export function playParticleEffect(cellElement) {
 /**
  * パーティクル要素を1つ生成し、アニメーションを開始します。
  * アニメーション終了後に自動的にDOMから削除されます。
- * @param {number} x - 生成位置のX座標
- * @param {number} y - 生成位置のY座標
+@param {number} x - 生成位置のX座標
+@param {number} y - 生成位置のY座標
  */
 function createParticle(x, y) {
     const particle = document.createElement('div');
     particle.classList.add('particle');
     dom.gridContainer.appendChild(particle);
 
-    const size = Math.random() * config.effects.particle.maxSize + config.effects.particle.minSize;
+    const size = Math.random() * CONFIG.effects.particle.maxSize + CONFIG.effects.particle.minSize;
     const angle = Math.random() * 2 * Math.PI;
-    const distance = Math.random() * config.effects.particle.distance;
+    const distance = Math.random() * CONFIG.effects.particle.distance;
     
     // 初期スタイル設定
     particle.style.width = `${size}px`;
     particle.style.height = `${size}px`;
     particle.style.left = `${x}px`;
     particle.style.top = `${y}px`;
-    particle.style.backgroundColor = config.effects.particle.colors[Math.floor(Math.random() * config.effects.particle.colors.length)];
+    particle.style.backgroundColor = CONFIG.effects.particle.colors[Math.floor(Math.random() * CONFIG.effects.particle.colors.length)];
 
     // アニメーション実行
     // requestAnimationFrameを挟むことで、要素がDOMに追加された後の描画フレームで
@@ -73,7 +73,7 @@ function createParticle(x, y) {
     // アニメーション終了後に要素を削除
     setTimeout(() => {
         particle.remove();
-    }, config.effects.particle.duration);
+    }, CONFIG.effects.particle.duration);
 }
 
 /**
@@ -86,7 +86,7 @@ export function playScreenShake() {
         setTimeout(() => {
             dom.gameContainer.classList.remove('screen-shake');
             resolve();
-        }, config.effects.screenShake.duration);
+        }, CONFIG.effects.screenShake.duration);
     });
 }
 
@@ -103,5 +103,5 @@ export function showComboDisplay(comboCount) {
     // アニメーション後に非表示にする
     setTimeout(() => {
         dom.comboDisplay.classList.remove('show');
-    }, config.effects.combo.duration);
+    }, CONFIG.effects.combo.duration);
 }
