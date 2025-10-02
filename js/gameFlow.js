@@ -19,7 +19,7 @@ function startTimer() {
     if (timerId) clearInterval(timerId);
     timerId = setInterval(() => {
         gameState.timeLeft--;
-        updateUI(gameState);
+        updateUI();
         if (gameState.timeLeft <= 0) {
             gameOver();
         }
@@ -39,6 +39,9 @@ function stopTimer() {
  * @param {string} mode - 選択されたゲームモード
  */
 export function startGame(mode) {
+        if (gameState.isProcessing) return;
+    gameState.isProcessing = true;
+    resetAllEffects();
     resetGameState(mode);
     document.documentElement.style.setProperty('--grid-size', gameState.gridSize);
     dom.clearBonusImage.classList.add('hidden');

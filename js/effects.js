@@ -116,10 +116,11 @@ export function resetAllEffects() {
         'screen-shake', 
         'screen-bounce', 
         'screen-jelly', 
-        'screen-stomp'
+        'screen-stomp',
+        'combo-display',
+        
         // 他にもあればここに追加
     ];
-    
     // gameContainerからすべてのエフェクトクラスを削除
     dom.gameContainer.classList.remove(...effectClasses);
 
@@ -129,4 +130,5 @@ export function resetAllEffects() {
 
     // コンボ表示も確実に非表示にする
     dom.comboDisplay.classList.remove('show');
+    dom.comboDisplay.textContent = '';
 }
