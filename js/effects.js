@@ -105,3 +105,28 @@ export function showComboDisplay(comboCount) {
         dom.comboDisplay.classList.remove('show');
     }, CONFIG.effects.combo.duration);
 }
+
+/**
+ * すべてのゲームエフェクト（CSSクラスや要素）をリセットし、初期状態に戻します。
+ * ゲーム終了時やリスタート時に呼び出すことを想定しています。
+ */
+export function resetAllEffects() {
+    // 画面全体に適用される可能性のあるエフェクトクラスをすべて列挙
+    const effectClasses = [
+        'screen-shake', 
+        'screen-bounce', 
+        'screen-jelly', 
+        'screen-stomp'
+        // 他にもあればここに追加
+    ];
+    
+    // gameContainerからすべてのエフェクトクラスを削除
+    dom.gameContainer.classList.remove(...effectClasses);
+
+    // 画面上に残っている可能性のあるパーティクル要素をすべて削除
+    const particles = dom.gridContainer.querySelectorAll('.particle');
+    particles.forEach(p => p.remove());
+
+    // コンボ表示も確実に非表示にする
+    dom.comboDisplay.classList.remove('show');
+}

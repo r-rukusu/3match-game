@@ -9,15 +9,17 @@
 // ===================================================================================
 import { CONFIG } from './config.js';
 import { gameState } from './gameState.js';
-import { showCombo, hideCombo, updateUI, createCell, updateCellPosition } from './ui.js';
-import { 
-    sleep, getCellElement, swapGridData, swapAnimation, 
-    isValidCoords, getCellCoords, areAdjacent, getRandomImageName, 
-    calculatePoints, checkLevelUp 
+// ▼▼▼ 変更点 ① ▼▼▼
+// ui.jsからのshow/hideComboを削除し、effectsモジュールを直接インポート
+import { updateUI, createCell, updateCellPosition } from './ui.js';
+import * as effects from './effects.js'; // 演出モジュールをインポート
+// ▲▲▲ 変更点 ① ▲▲▲
+import {
+    sleep, getCellElement, swapGridData, swapAnimation,
+    isValidCoords, getCellCoords, areAdjacent, getRandomImageName,
+    calculatePoints, checkLevelUp
 } from './utils.js';
 import { dom } from './dom.js';
-import * as ui from './ui.js'; // uiモジュールをインポート
-
 // ===================================================================================
 // 公開(export)する関数
 // ===================================================================================
@@ -236,7 +238,10 @@ async function processMatches(initialMatchGroups, swapInfo = null) {
     // --- 3. 消去、スコア加算、補充 ---
     if (allClearedCoords.size > 0) {
         gameState.combo++;
-        showCombo(gameState.combo);
+        effects.showComboDisplay(gameState.combo);
+        if (gameState.combo > 1) {
+            effects.playScreenShake();
+        }
         gameState.score += calculatePoints(Array.from(allClearedCoords));
         gameState.exp += allClearedCoords.size;
         
@@ -253,7 +258,6 @@ async function processMatches(initialMatchGroups, swapInfo = null) {
             await processMatches(newMatchGroups);
         } else {
             // 連鎖が終了
-            hideCombo();
             gameState.combo = 0;
         }
     }
@@ -324,6 +328,7 @@ async function removeMatchedCells(matchedCoords) {
         const [row, col] = coord.split('-').map(Number);
         const cell = getCellElement(row, col);
         if (cell) {
+            effects.playParticleEffect(cell);
             cell.classList.add('fade-out'); // 消去アニメーション
             return sleep(CONFIG.ANIMATION_DURATION).then(() => {
                 if (cell.parentNode) cell.remove();

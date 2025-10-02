@@ -8,6 +8,7 @@ import { gameState, resetGameState } from './gameState.js';
 import { saveHighScore } from './storage.js';
 import { showScreen, updateUI, renderGrid } from './ui.js';
 import { createGridData, findMatchGroups } from './gameLogic.js';
+import { resetAllEffects } from './effects.js';
 
 let timerId = null;
 
@@ -61,24 +62,79 @@ export function startGame(mode) {
  * ゲームを終了する
  */
 export function gameOver() {
+    // 1. 進行中のプロセスを停止
     stopTimer();
-    const modeConfig = CONFIG.MODES[gameState.currentMode];
     
-    if (gameState.score > gameState.highScore) {
+    // 2. 【最重要】画面遷移の前に、必ずエフェクトをリセットする
+    resetAllEffects();
+
+    // 3. スコアと状態を判定
+    const modeConfig = CONFIG.MODES[gameState.currentMode];
+    const isNewHighScore = gameState.score > gameState.highScore;
+    const isGameClear = gameState.score >= modeConfig.CLEAR_SCORE_THRESHOLD;
+
+    if (isNewHighScore) {
         gameState.highScore = gameState.score;
         saveHighScore(gameState.highScore);
-        dom.newHighScoreMessage.classList.remove('hidden');
     }
+    
+    // 4. UIの更新処理を呼び出し、アニメーションを開始
+    updateGameOverScreen(isGameClear, isNewHighScore);
+    
+    // 5. 画面を表示
+    showScreen('gameOver');
+}
 
-    if (gameState.score >= modeConfig.CLEAR_SCORE_THRESHOLD) {
+/**
+ * ゲームオーバー画面のUI要素を更新し、演出を再生する
+ * @param {boolean} isGameClear - ゲームクリアしたか
+ * @param {boolean} isNewHighScore - ハイスコアを更新したか
+ */
+function updateGameOverScreen(isGameClear, isNewHighScore) {
+    // テキストと画像の表示を更新
+    dom.highScoreEnd.textContent = gameState.highScore;
+    dom.newHighScoreMessage.classList.toggle('hidden', !isNewHighScore);
+
+    if (isGameClear) {
         dom.gameOverTitle.textContent = 'Game Clear!';
+        // 【安全性】画像読み込み失敗時のフォールバック処理を追加
+        dom.clearBonusImage.onerror = () => {
+            dom.clearBonusImage.classList.add('hidden'); // 失敗したら非表示に
+        };
         dom.clearBonusImage.src = `${CONFIG.IMAGE_PATH}${CONFIG.CLEAR_IMAGE_NAME}`;
         dom.clearBonusImage.classList.remove('hidden');
     } else {
         dom.gameOverTitle.textContent = 'Game Over';
         dom.clearBonusImage.classList.add('hidden');
     }
-    dom.finalScore.textContent = gameState.score;
-    dom.highScoreEnd.textContent = gameState.highScore;
-    showScreen('gameOver');
+    
+    // 【UX向上】スコアをアニメーションさせて表示
+    animateScoreCounter(dom.finalScore, gameState.score, 1000);
+}
+
+
+/**
+ * スコアを指定時間かけてカウントアップさせるアニメーション
+ * @param {HTMLElement} element - 数字を表示するDOM要素
+ * @param {number} finalScore - 最終的なスコア
+ * @param {number} duration - アニメーション時間 (ms)
+ */
+async function animateScoreCounter(element, finalScore, duration) {
+    let currentScore = 0;
+    const startTime = performance.now();
+
+    function updateFrame(currentTime) {
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(elapsedTime / duration, 1); // 0から1の進捗率
+        
+        currentScore = Math.floor(finalScore * progress);
+        element.textContent = currentScore;
+
+        if (progress < 1) {
+            requestAnimationFrame(updateFrame);
+        } else {
+            element.textContent = finalScore; // 最終値を正確に設定
+        }
+    }
+    requestAnimationFrame(updateFrame);
 }
