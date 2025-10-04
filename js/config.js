@@ -47,5 +47,12 @@ export const CONFIG = {
             duration: 1000 // 表示時間 (ms)
         }
     },
-
+    AUDIO: {
+        BGM_PATH: './audio/bgm.wav',
+        TAP_SE_PATH: './audio/tap.mp3',
+        GAME_OVER_SE_PATH: './audio/gameover.mp3',
+        MATCH_SE_PATH: './audio/match.mp3',
+        DEFAULT_BGM_VOLUME: 0.3,  // BGMの音量 (0.0 to 1.0)
+        DEFAULT_SE_VOLUME: 0.6,   // 効果音の音量 (0.0 to 1.0)
+    },
 };

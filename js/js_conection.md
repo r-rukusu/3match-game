@@ -49,6 +49,7 @@ graph TD
     subgraph "UI/ビュー"
         ui
         effects %% <-- [変更] effectsモジュールを追加
+        audioManager
     end
 
     subgraph "ユーティリティ"
@@ -72,11 +73,13 @@ graph TD
     main --> storage
     main --> dom
     main --> gameState
+    main --> audioManager
 
     input --> gameLogic
     input --> utils
     input --> dom
     input --> config
+    input --> audioManager
 
     gameFlow --> gameLogic
     gameFlow --> ui
@@ -84,6 +87,7 @@ graph TD
     gameFlow --> gameState
     gameFlow --> dom
     gameFlow --> config
+    gameFlow --> audioManager
 
     gameLogic --> utils
     gameLogic --> ui
@@ -105,6 +109,8 @@ graph TD
     effects --> dom %% <-- [変更] effectsからdomへの依存を追加
     effects --> config %% <-- [変更] effectsからconfigへの依存を追加
 
+    audioManager --> config
+
     utils --> gameState
     utils --> config
     
@@ -125,3 +131,4 @@ graph TD
     class gameLogic logic;
     class input,gameFlow interaction;
     class ui,utils,effects view; %% <-- [変更] effectsをviewグループに追加
+    class ui,utils,effects,audioManager view;

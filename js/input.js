@@ -7,12 +7,14 @@ import { dom } from './dom.js';
 import { handleSelection, handleSwap } from './gameLogic.js';
 import { getCellCoords, isValidCoords, getCellElement } from './utils.js';
 import { CONFIG } from './config.js';
+import { playSE } from './audioManager.js';
 
 let touchStartCoords = null;
 
 function handleCellClick(event) {
     const cellElement = event.target.closest('.cell');
     if (cellElement) {
+        playSE('tap');
         handleSelection(cellElement);
     }
 }
@@ -20,12 +22,14 @@ function handleCellClick(event) {
 function handleTouchStart(event) {
     const cellElement = event.target.closest('.cell');
     if (cellElement) {
+        playSE('決定ボタンを押す42');
         event.preventDefault();
         touchStartCoords = {
             x: event.touches[0].clientX,
             y: event.touches[0].clientY,
             target: cellElement
         };
+        
     }
 }
 

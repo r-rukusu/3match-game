@@ -9,6 +9,7 @@ import { saveHighScore } from './storage.js';
 import { showScreen, updateUI, renderGrid } from './ui.js';
 import { createGridData, findMatchGroups } from './gameLogic.js';
 import { resetAllEffects } from './effects.js';
+import { playBGM, playSE, stopBGM } from './audioManager.js';
 
 let timerId = null;
 
@@ -59,6 +60,8 @@ export function startGame(mode) {
     renderGrid();
     updateUI(gameState);
     startTimer();
+    playBGM();
+
 }
 
 /**
@@ -67,6 +70,9 @@ export function startGame(mode) {
 export function gameOver() {
     // 1. 進行中のプロセスを停止
     stopTimer();
+    playSE('gameover');
+
+    stopBGM();
     
     // 2. 【最重要】画面遷移の前に、必ずエフェクトをリセットする
     resetAllEffects();

@@ -23,4 +23,6 @@ export const dom = {
     comboDisplay: document.getElementById('combo-display'),
     clearBonusImage: document.getElementById('clear-bonus-image'),
     gameContainer: document.getElementById('game-container'), // screen-shake用
+    muteButton: document.getElementById('mute-button'), // mute
+
 };
