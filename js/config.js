@@ -6,7 +6,7 @@
 // 設定オブジェクトをエクスポート
 export const CONFIG = {
     STORAGE_KEY: 'matchGameHighScore',
-    LEVEL_UP_EXP_BASE: 100,
+    LEVEL_UP_EXP_BASE: 50,
     CLEAR_IMAGE_NAME: 'clear.png',
     IMAGE_NAMES: ['1.png', '2.png', '3.png', '4.png', '5.png'],
     IMAGE_PATH: './img/',

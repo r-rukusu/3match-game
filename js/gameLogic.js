@@ -9,11 +9,8 @@
 // ===================================================================================
 import { CONFIG } from './config.js';
 import { gameState } from './gameState.js';
-// ▼▼▼ 変更点 ① ▼▼▼
-// ui.jsからのshow/hideComboを削除し、effectsモジュールを直接インポート
 import { updateUI, createCell, updateCellPosition } from './ui.js';
-import * as effects from './effects.js'; // 演出モジュールをインポート
-// ▲▲▲ 変更点 ① ▲▲▲
+import * as effects from './effects.js'; 
 import {
     sleep, getCellElement, swapGridData, swapAnimation,
     isValidCoords, getCellCoords, areAdjacent, getRandomImageName,
@@ -217,9 +214,17 @@ async function processMatches(initialMatchGroups, swapInfo = null) {
         
         await removeMatchedCells(Array.from(allClearedCoords));
         await dropAndRefillCells();
-        
-        updateUI();
+        const levelBefore = gameState.level;
         checkLevelUp();
+
+                // 3. レベルアップしたか判定し、時間を加算
+        if (gameState.level > levelBefore) {
+            gameState.timeLeft += 10;
+            console.log(`Level Up! Time +1 sec. Current time: ${gameState.timeLeft}`);
+            // 4. 時間が増えたことを即座にUIへ反映
+            updateUI(); 
+        }
+        updateUI();
 
         // --- 4. 連鎖（リカーシブコール） ---
         const newMatchGroups = findMatchGroups();

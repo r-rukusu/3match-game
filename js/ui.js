@@ -82,8 +82,14 @@ export function createCell(row, col, piece) {
     cell.dataset.col = col;
     updateCellPosition(cell, row, col);
     const img = document.createElement('img');
+    img.onerror = function() {
+    // 1. 将来のerrorイベントでこの関数が再度呼ばれるのを防ぐ
+    this.onerror = null;
+    
+    // 2. 代替の画像ソースを設定する
+    this.src = CONFIG.DUMMY_IMAGE_SRC;
+    };
     img.src = `${CONFIG.IMAGE_PATH}${piece.image}`;
-    img.onerror = () => { img.src = CONFIG.DUMMY_IMAGE_SRC; };
     cell.appendChild(img);
     return cell;
 }
