@@ -180,6 +180,18 @@ async function processMatches(initialMatchGroups, swapInfo = null) {
                 
                 // スペシャルピースの種類に応じて、効果範囲の座標を消去リストに追加
                 switch (pieceConfig.type) {
+                    case 'cross_rainbow':
+                    const targetImage = gameState.grid[row][col]?.image;
+                    if (targetImage) {
+                        for (let r = 0; r < gameState.gridSize; r++) {
+                            for (let c = 0; c < gameState.gridSize; c++) {
+                                if (gameState.grid[r][c]?.image === targetImage) {
+                                    coordsToProcess.add(`${r}-${c}`);
+                                }
+                            }
+                        }
+                    }
+                    break;
                     case 'bomb':
                         for (let r = row - 1; r <= row + 1; r++) { for (let c = col - 1; c <= col + 1; c++) { if (isValidCoords(r, c)) coordsToProcess.add(`${r}-${c}`); } }
                         break;
@@ -216,6 +228,18 @@ async function processMatches(initialMatchGroups, swapInfo = null) {
         if (piece && piece.type !== 'normal') {
             processedSpecials.add(currentCoordStr);
             switch (piece.type) {
+                case 'cross_rainbow':
+                const targetImage = piece.image;
+                if (targetImage) {
+                    for (let r = 0; r < gameState.gridSize; r++) {
+                        for (let c = 0; c < gameState.gridSize; c++) {
+                            if (gameState.grid[r][c]?.image === targetImage) {
+                                coordsToProcess.add(`${r}-${c}`);
+                            }
+                        }
+                    }
+                }
+                break;
                 case 'bomb':
                     for (let r = row - 1; r <= row + 1; r++) { for (let c = col - 1; c <= col + 1; c++) { if (isValidCoords(r, c)) coordsToProcess.add(`${r}-${c}`); } }
                     break;

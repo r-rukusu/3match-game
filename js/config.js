@@ -20,6 +20,7 @@ export const CONFIG = {
         normal: { GRID_SIZE: 8, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 4000 },
     },
     SPECIAL_PIECES: {
+        CROSS_RAINBOW: { type: 'cross_rainbow', className: 'cross-rainbow', creationCondition: { type: 'match', length: 5 } },
         LINE_BOMB: { type: 'line_bomb', className: 'line-bomb', creationCondition: { type: 'match', length: 4 } },
         BOMB: { type: 'bomb', className: 'bomb', creationCondition: { type: 'shape', shape: ['L', 'T'] } },
         CROSS_BOMB: { type: 'cross_bomb', className: 'cross-bomb', creationCondition: { type: 'shape', shape: ['cross'] } },
