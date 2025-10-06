@@ -1,4 +1,6 @@
 # 3match-game
+2025©R/rukusu,Bokemon
+
 本ゲームのキャラクターイラストは、Bokemon 様に制作していただきました。
 
 Bokemon
