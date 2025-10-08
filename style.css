@@ -93,8 +93,8 @@ h1 {
 /* ===================================================================================
    ハイスコア表示のスタイル ★★★ ここから追加 ★★★
    =================================================================================== */
-.high-score-display {
-    font-size: 18px;
+.global-high-score-display {
+    font-size: 30px;
     font-weight: bold;
     color: var(--text-color);
     background-color: rgba(255, 255, 255, 0.3);
@@ -104,17 +104,17 @@ h1 {
     margin-bottom: 20px;
 }
 
-#new-high-score-message {
+#new-global-high-score-message {
     font-size: 22px;
     font-weight: bold;
-    color: #ffc107; /* 目を引く黄色 */
+    color: #07deff; /* 目を引く黄色 */
     text-shadow: 0 0 8px rgba(0,0,0,0.5);
     margin: 15px 0 0 0;
-    animation: new-score-animation 1.5s ease-in-out infinite;
+    animation: new-global-score-animation 1.5s ease-in-out infinite;
 }
 
 /* ハイスコア更新時のアニメーション */
-@keyframes new-score-animation {
+@keyframes new-global-score-animation {
     0%, 100% {
         transform: scale(1);
         opacity: 0.8;
@@ -123,6 +123,32 @@ h1 {
         transform: scale(1.05);
         opacity: 1;
     }
+}
+
+/* ローカルハイスコア（Your Best）の表示スタイル */
+.local-high-score-display {
+    font-size: 2.2vmin; /* グローバルと差別化 */
+    color: var(--board-bg-color); /* メインカラーを使用 */
+    margin-top: 1vmin;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* ユーザー自己ベスト更新メッセージのスタイル */
+#new-local-high-score-message {
+    font-size: 6vmin;
+    color: #ffc107; /* 目立つ色（ゴールド系） */
+    font-weight: 900;
+    margin-top: 2vmin;
+    animation: local-pulse 1.5s infinite; /* 専用アニメーションを適用 */
+    text-shadow: 0 0 5px #ff4500, 0 0 10px #ff4500;
+}
+
+/* Local High Score 更新時のアニメーション */
+@keyframes local-pulse {
+    0%   { transform: scale(1.0); opacity: 1; }
+    50%  { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1.0); opacity: 1; }
 }
 /* ★★★ 追加ここまで ★★★ */
 

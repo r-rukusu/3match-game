@@ -15,9 +15,12 @@ export const CONFIG = {
     COMBO_BONUS_MULTIPLIER: 0.1,
     SWIPE_THRESHOLD: 10,
     INIT_LOOP_SAFETY_LIMIT: 500,
+    STORAGE_KEYS: { // <--- [追加] 新しいキーを定義
+        LOCAL_HIGH_SCORE_PREFIX: 'user_high_score_', // ユーザー自己ベスト用のローカルストレージキー
+    },
     MODES: {
-        easy:   { GRID_SIZE: 6, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 4000 },
-        normal: { GRID_SIZE: 8, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 4000 },
+        easy:   { GRID_SIZE: 6, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 4000, SCORE_MULTIPLIER: 3.0  },
+        normal: { GRID_SIZE: 8, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 4000, SCORE_MULTIPLIER: 1.0  },
     },
     SPECIAL_PIECES: {
         CROSS_RAINBOW: { type: 'cross_rainbow', className: 'cross-rainbow', creationCondition: { type: 'match', length: 5 } },
@@ -54,5 +57,15 @@ export const CONFIG = {
         MATCH_SE_PATH: './audio/match.mp3',
         DEFAULT_BGM_VOLUME: 0.3,  // BGMの音量 (0.0 to 1.0)
         DEFAULT_SE_VOLUME: 0.6,   // 効果音の音量 (0.0 to 1.0)
+    },
+
+    FIREBASE_CONFIG: {
+        apiKey: "AIzaSyAFqYPXeZHCwopZiA0WExfAtukQw3LVf_U",
+        authDomain: "match-game-rks.firebaseapp.com",
+        databaseURL: "https://match-game-rks-default-rtdb.firebaseio.com/", // データべースのリージョンに注意
+        projectId: "match-game-rks",
+        storageBucket: "match-game-rks.firebasestorage.app",
+        messagingSenderId: "781079705187",
+        appId: "1:781079705187:web:6dc504523e986a215c6a56"
     },
 };

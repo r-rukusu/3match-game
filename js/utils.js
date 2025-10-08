@@ -14,6 +14,14 @@ export function areAdjacent(cellA, cellB) { const { row: r1, col: c1 } = getCell
 export function isValidCoords(row, col) { const { gridSize } = gameState; return row >= 0 && row < gridSize && col >= 0 && col < gridSize; }
 export function swapGridData(cellA, cellB) { const { row: r1, col: c1 } = getCellCoords(cellA); const { row: r2, col: c2 } = getCellCoords(cellB);[gameState.grid[r1][c1], gameState.grid[r2][c2]] = [gameState.grid[r2][c2], gameState.grid[r1][c1]];[gameState.cellElements[r1][c1], gameState.cellElements[r2][c2]] = [gameState.cellElements[r2][c2], gameState.cellElements[r1][c1]]; }
 export function swapAnimation(cellA, cellB) { return new Promise(resolve => { const { row: r1, col: c1 } = getCellCoords(cellA); const { row: r2, col: c2 } = getCellCoords(cellB); updateCellPosition(cellA, r2, c2); updateCellPosition(cellB, r1, c1); cellA.dataset.row = r2; cellA.dataset.col = c2; cellB.dataset.row = r1; cellB.dataset.col = c1; setTimeout(resolve, CONFIG.ANIMATION_DURATION); }); }
-export function calculatePoints(matches) { const basePoints = matches.length * 10; const comboBonus = Math.floor(basePoints * (gameState.combo * CONFIG.COMBO_BONUS_MULTIPLIER)); return basePoints + comboBonus; }
+export function calculatePoints(matches) { 
+    const basePoints = matches.length * 10;
+    const comboBonus = Math.floor(basePoints * (gameState.combo * CONFIG.COMBO_BONUS_MULTIPLIER)); 
+    let totalPoints = basePoints + comboBonus;
+    const mode = gameState.currentMode;
+    const multiplier = CONFIG.MODES[mode]?.SCORE_MULTIPLIER || 1.0;
+    totalPoints = Math.floor(totalPoints * multiplier);
+    return totalPoints; 
+}
 export function checkLevelUp() { const requiredExp = CONFIG.LEVEL_UP_EXP_BASE * gameState.level; if (gameState.exp >= requiredExp) { gameState.level++; gameState.exp -= requiredExp; } }
 export function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }

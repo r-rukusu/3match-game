@@ -15,7 +15,7 @@
  */
 
 import { dom } from './dom.js';
-import { loadHighScore } from './storage.js';
+import { loadHighScore, loadUserHighScore } from './storage.js';
 import { showScreen } from './ui.js';
 import { startGame } from './gameFlow.js';
 import { initializeInput } from './input.js';
@@ -25,10 +25,13 @@ import { initializeMuteState, preloadAudios, toggleMute } from './audioManager.j
 /**
  * アプリケーションの初期化
  */
-function initializeApp() {
+async function initializeApp() {
     // ハイスコアを読み込んで表示
-    loadHighScore();
+    await loadHighScore();
+    loadUserHighScore('easy');
+    loadUserHighScore('normal');
 
+    
     // 音声ファイルのプリロード
     preloadAudios().catch(error => {
         console.warn("Audio preloading failed. The game will continue without some sounds.", error);

@@ -5,9 +5,14 @@
 
 // DOM要素参照オブジェクトをエクスポート
 export const dom = {
-    highScoreStart: document.getElementById('high-score-start'),
-    highScoreEnd: document.getElementById('high-score-end'),
-    newHighScoreMessage: document.getElementById('new-high-score-message'),
+    highScoreStart: document.getElementById('global-high-score-start'),
+    highScoreEnd: document.getElementById('global-high-score-end'),
+    newHighScoreMessage: document.getElementById('new-global-high-score-message'),
+    localHighScoreStart: document.getElementById('local-high-score-start'),
+    localHighScoreEnd: document.getElementById('local-high-score-end'),
+    localHighScoreStartEasy: document.getElementById('local-high-score-start-easy'),
+    localHighScoreStartNormal: document.getElementById('local-high-score-start-normal'),
+    newLocalHighScoreMessage: document.getElementById('new-local-high-score-message'),
     modeButtons: document.querySelectorAll('.mode-button'),
     restartButton: document.getElementById('restart-button'),
     startScreen: document.getElementById('start-screen'),

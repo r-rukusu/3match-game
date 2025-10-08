@@ -5,12 +5,11 @@
 import { CONFIG } from './config.js';
 import { dom } from './dom.js';
 import { gameState, resetGameState } from './gameState.js';
-import { saveHighScore } from './storage.js';
+import { saveHighScore,saveUserHighScore,loadUserHighScore } from './storage.js';
 import { showScreen, updateUI, renderGrid } from './ui.js';
 import { createGridData, findMatchGroups } from './gameLogic.js';
 import { resetAllEffects } from './effects.js';
 import { playBGM, playSE, stopBGM } from './audioManager.js';
-
 let timerId = null;
 
 /**
@@ -44,6 +43,7 @@ export function startGame(mode) {
     gameState.isProcessing = true;
     resetAllEffects();
     resetGameState(mode);
+    loadUserHighScore(mode); // loadUserHighScore は gameState.userHighScore を更新する
     document.documentElement.style.setProperty('--grid-size', gameState.gridSize);
     dom.clearBonusImage.classList.add('hidden');
     showScreen('game');
@@ -67,7 +67,7 @@ export function startGame(mode) {
 /**
  * ゲームを終了する
  */
-export function gameOver() {
+export async function gameOver() {
     // 1. 進行中のプロセスを停止
     stopTimer();
     playSE('gameover');
@@ -79,19 +79,18 @@ export function gameOver() {
 
     // 3. スコアと状態を判定
     const modeConfig = CONFIG.MODES[gameState.currentMode];
-    const isNewHighScore = gameState.score > gameState.highScore;
+    const score =gameState.score;
+    const mode = gameState.currentMode; // 現在のモードを取得
+    const isNewHighScore = await saveHighScore(score, mode);
+    const isNewLocalHighScore = saveUserHighScore(score, mode);
     const isGameClear = gameState.score >= modeConfig.CLEAR_SCORE_THRESHOLD;
 
-    if (isNewHighScore) {
-        gameState.highScore = gameState.score;
-        saveHighScore(gameState.highScore);
-    }
-    
     // 4. UIの更新処理を呼び出し、アニメーションを開始
-    updateGameOverScreen(isGameClear, isNewHighScore);
+    updateGameOverScreen(isGameClear, isNewHighScore,isNewLocalHighScore);
     
     // 5. 画面を表示
     showScreen('gameOver');
+    
 }
 
 /**
@@ -99,10 +98,12 @@ export function gameOver() {
  * @param {boolean} isGameClear - ゲームクリアしたか
  * @param {boolean} isNewHighScore - ハイスコアを更新したか
  */
-function updateGameOverScreen(isGameClear, isNewHighScore) {
+function updateGameOverScreen(isGameClear, isNewHighScore, isNewLocalHighScore) {
     // テキストと画像の表示を更新
     dom.highScoreEnd.textContent = gameState.highScore;
+    dom.localHighScoreEnd.textContent = gameState.userHighScore;
     dom.newHighScoreMessage.classList.toggle('hidden', !isNewHighScore);
+    dom.newLocalHighScoreMessage.classList.toggle('hidden', !isNewLocalHighScore);
 
     if (isGameClear) {
         dom.gameOverTitle.textContent = 'Game Clear!';

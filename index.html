@@ -5,26 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>画像マッチゲーム＋アイテム</title>
     <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 </head>
 <body>
 
     <div id="game-container">
         <button id="mute-button">🔊</button>
+        
         <div id="start-screen" class="screen active">
             <h1>画像マッチゲーム</h1>
             <p>同じキャラクターを3つ以上並べて消そう！</p>
             <p>本ゲームはKAMITSUBAKI STUDIO「音楽的同位体　狐子（COKO）」の二次創作ゲームです。</p>
-            <div class="high-score-display">
-                High Score: <span id="high-score-start">0</span>
-            </div>            
+            
+            <div class="global-high-score-display">
+                Global High Score: <span id="global-high-score-start">0</span>
+            </div>
+            <!-- <div class="local-high-score-display"> Your Best: <span id="local-high-score-start">0</span> -->
+            <!-- </div>  -->
+            
             <p>モードを選択してください</p>
             <div id="mode-selection">
-                <button class="button mode-button" data-mode="easy">かんたん (6x6)</button>
-                <button class="button mode-button" data-mode="normal">ふつう (8x8)</button>
-            </div>
-        </div>
+                
+                <div class="mode-option">
+                    <button class="button mode-button" data-mode="easy">かんたん (6x6)</button>
+                    <div class="local-high-score-display">Your Best: <span id="local-high-score-start-easy">0</span></div>
+                </div>
 
-        <div id="game-screen" class="screen">
+                <div class="mode-option">
+                    <button class="button mode-button" data-mode="normal">ふつう (8x8)</button>
+                    <div class="local-high-score-display">Your Best: <span id="local-high-score-start-normal">0</span></div>
+                </div>
+                
+            </div>
+        </div> <div id="game-screen" class="screen">
             <div id="hud">
                 <div class="hud-item">
                     <span class="label">SCORE</span>
@@ -53,17 +67,23 @@
         <div id="game-over-screen" class="screen">
             <h2 id="game-over-title">ゲームオーバー</h2>
             <p>最終スコア: <span id="final-score">0</span></p>
+            
             <div class="high-score-display">
-                High Score: <span id="high-score-end">0</span>
+                Global High Score: <span id="global-high-score-end">0</span>
             </div>
+            <p id="new-global-high-score-message" class="hidden">🎉!!!New Global High Score!!!🎉</p>
+            
+            <div class="local-high-score-display"> Your Best: <span id="local-high-score-end">0</span>
+            </div>
+            <p id="new-local-high-score-message" class="hidden">🎉 NEW BEST SCORE! 🎉</p>
             <p id="new-high-score-message" class="hidden">New High Score!</p>
+            
             <img id="clear-bonus-image" class="hidden" alt="クリア特典">
             <button id="restart-button">もう一度プレイ(モード選択へ)</button>
             <p>本ゲームはKAMITSUBAKI STUDIO「音楽的同位体　狐子（COKO）」の二次創作ゲームです。</p>
-        </div>
-    <footer>
+        </div> <footer>
             <p>2025©R/rukusu,Bokemon</p>
-            <p>お問い合わせ：　<a href="https://x.com/kmdwad89_9" target="_blank" rel="noopener noreferrer">https://x.com/kmdwad89_9</a></p>
+            <p>お問い合わせ：<a href="https://x.com/kmdwad89_9" target="_blank" rel="noopener noreferrer">https://x.com/kmdwad89_9</a></p>
     </footer>
     </div>
 

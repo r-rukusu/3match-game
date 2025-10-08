@@ -19,5 +19,6 @@ export function resetGameState(mode = 'normal') {
         combo: 0, isProcessing: false, selectedCell: null, timerId: null,
         currentMode: mode, gridSize: modeConfig.GRID_SIZE,
         highScore: gameState.highScore || 0, // ハイスコアはリセットせずに引き継ぐ
+        userHighScore:gameState.userHighScore || 0,
     };
 }

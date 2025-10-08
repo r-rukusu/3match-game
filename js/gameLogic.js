@@ -220,7 +220,7 @@ async function processMatches(initialMatchGroups, swapInfo = null) {
                 // 3. レベルアップしたか判定し、時間を加算
         if (gameState.level > levelBefore) {
             gameState.timeLeft += 10;
-            console.log(`Level Up! Time +1 sec. Current time: ${gameState.timeLeft}`);
+            console.log(`Level Up! Time +10 sec. Current time: ${gameState.timeLeft}`);
             // 4. 時間が増えたことを即座にUIへ反映
             updateUI(); 
         }
