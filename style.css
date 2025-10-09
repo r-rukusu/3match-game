@@ -127,7 +127,7 @@ h1 {
 
 /* ローカルハイスコア（Your Best）の表示スタイル */
 .local-high-score-display {
-    font-size: 2.2vmin; /* グローバルと差別化 */
+    font-size: 3.2vmin; /* グローバルと差別化 */
     color: var(--board-bg-color); /* メインカラーを使用 */
     margin-top: 1vmin;
     font-weight: bold;
