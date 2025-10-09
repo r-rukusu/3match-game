@@ -6,7 +6,7 @@
 // 設定オブジェクトをエクスポート
 export const CONFIG = {
     STORAGE_KEY: 'matchGameHighScore',
-    LEVEL_UP_EXP_BASE: 50,
+    LEVEL_UP_EXP_BASE: 40,
     CLEAR_IMAGE_NAME: 'clear.png',
     IMAGE_NAMES: ['1.png', '2.png', '3.png', '4.png', '5.png'],
     IMAGE_PATH: './img/',
@@ -19,8 +19,8 @@ export const CONFIG = {
         LOCAL_HIGH_SCORE_PREFIX: 'user_high_score_', // ユーザー自己ベスト用のローカルストレージキー
     },
     MODES: {
-        easy:   { GRID_SIZE: 6, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 4000, SCORE_MULTIPLIER: 3.0  },
-        normal: { GRID_SIZE: 8, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 4000, SCORE_MULTIPLIER: 1.0  },
+        easy:   { GRID_SIZE: 6, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 5000, SCORE_MULTIPLIER: 2.0  },
+        normal: { GRID_SIZE: 8, GAME_TIME_SECONDS: 60, CLEAR_SCORE_THRESHOLD: 5000, SCORE_MULTIPLIER: 1.0  },
     },
     SPECIAL_PIECES: {
         CROSS_RAINBOW: { type: 'cross_rainbow', className: 'cross-rainbow', creationCondition: { type: 'match', length: 5 } },
@@ -39,7 +39,10 @@ export const CONFIG = {
             maxSize: 15, // パーティクルの最大サイズ (px)
             distance: 80, // パーティクルの飛距離 (px)
             duration: 600, // アニメーション時間 (ms)
-            colors: ['#ffc107', '#ff85a2', '#8effa9', '#81c3d7'] // パーティクルの色のリスト
+            colors: ['#ffc107', '#ff85a2', '#8effa9', '#81c3d7'], // パーティクルの色のリスト
+            timeBarStartColor: '#0cbaffff', // Green (High)
+            timeBarMiddleColor: '#f707ff', // Yellow (Middle)
+            timeBarEndColor: '#dc35a2', // Red (Low)
         },
         // 画面シェイクの設定
         screenShake: {

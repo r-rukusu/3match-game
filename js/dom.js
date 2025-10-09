@@ -23,6 +23,8 @@ export const dom = {
     score: document.getElementById('score'),
     level: document.getElementById('level'),
     timeLeft: document.getElementById('time-left'),
+    timeBar: document.getElementById('time-bar'),
+    timeBonusDisplay: document.getElementById('time-bonus-display'), 
     expBar: document.getElementById('exp-bar'),
     finalScore: document.getElementById('final-score'),
     comboDisplay: document.getElementById('combo-display'),

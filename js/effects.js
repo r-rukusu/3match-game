@@ -107,6 +107,24 @@ export function showComboDisplay(comboCount) {
 }
 
 /**
+ * レベルアップ時の時間ボーナス (+10秒など) を画面中央に表示します。
+ * @param {number} bonusAmount - 加算された秒数 (例: 10)
+ */
+export function showTimeBonusDisplay(bonusAmount) {
+    const display = dom.timeBonusDisplay; // comboDisplayのDOM要素を再利用
+    
+    // 画面中央に表示するテキストを設定
+    display.textContent = `+${bonusAmount} SECONDS!`; 
+    display.classList.add('time-bonus-display', 'show'); // 新しいスタイルを適用
+    display.style.animation = `time-bonus-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)`;
+    // 一定時間後に非表示にする
+    setTimeout(() => {
+        display.classList.remove('show');
+        display.textContent = '';
+    }, CONFIG.effects.combo.duration); // コンボ表示と同じ持続時間を使用
+}
+
+/**
  * すべてのゲームエフェクト（CSSクラスや要素）をリセットし、初期状態に戻します。
  * ゲーム終了時やリスタート時に呼び出すことを想定しています。
  */

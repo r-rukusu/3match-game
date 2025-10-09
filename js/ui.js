@@ -19,7 +19,36 @@ export function showScreen(screenName) {
 export function updateUI() {
     dom.score.textContent = gameState.score;
     dom.level.textContent = gameState.level;
-    dom.timeLeft.textContent = gameState.timeLeft;
+
+    const maxTime = 60;
+    const timeLeft = Math.max(0.0, gameState.timeLeft); // 0未満にならないように
+    
+    // timePercent をここで定義することで、ReferenceErrorを解消します
+    const timePercent = (timeLeft / maxTime) * 100; // timePercent の定義
+
+    // 1. バーの幅を更新
+    dom.timeBar.style.width = `${timePercent}%`;
+    dom.timeLeft.textContent = Math.ceil(timeLeft); 
+
+    // 2. グラデーション色の計算
+    const { timeBarEndColor, timeBarMiddleColor, timeBarStartColor } = CONFIG.effects.particle;
+    
+    let colorValue = timeBarStartColor; // デフォルトは緑
+
+    // 残り時間に応じて色を決定 (しきい値は config.js の設定を想定)
+    if (timePercent <= 20) {
+        // 20%以下は赤
+        colorValue = timeBarEndColor; 
+    } else if (timePercent <= 50) {
+        // 50%以下は黄色
+        colorValue = timeBarMiddleColor;
+    } 
+    
+    // CSSカスタムプロパティを更新
+    dom.timeBar.style.setProperty('--time-bar-color', colorValue);
+
+    // ----------------------------------------------------
+
     const requiredExp = CONFIG.LEVEL_UP_EXP_BASE * gameState.level;
     const expPercentage = (gameState.exp / requiredExp) * 100;
     dom.expBar.style.width = `${expPercentage}%`;

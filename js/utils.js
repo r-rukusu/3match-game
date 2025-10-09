@@ -6,6 +6,7 @@ import { gameState } from './gameState.js';
 import { CONFIG } from './config.js';
 // ★★★ 依存関係エラーを修正: ui.jsからupdateCellPositionをインポート
 import { updateCellPosition } from './ui.js';
+import * as effects from './effects.js'
 
 export function getRandomImageName() { return CONFIG.IMAGE_NAMES[Math.floor(Math.random() * CONFIG.IMAGE_NAMES.length)]; }
 export function getCellCoords(cell) { return { row: parseInt(cell.dataset.row, 10), col: parseInt(cell.dataset.col, 10) }; }
@@ -23,5 +24,15 @@ export function calculatePoints(matches) {
     totalPoints = Math.floor(totalPoints * multiplier);
     return totalPoints; 
 }
-export function checkLevelUp() { const requiredExp = CONFIG.LEVEL_UP_EXP_BASE * gameState.level; if (gameState.exp >= requiredExp) { gameState.level++; gameState.exp -= requiredExp; } }
+export function checkLevelUp() { 
+    const requiredExp = CONFIG.LEVEL_UP_EXP_BASE * gameState.level; 
+    if (gameState.exp >= requiredExp) { 
+        gameState.level++; 
+        gameState.exp -= requiredExp; 
+        const bonusTime = 10;
+        gameState.timeLeft += bonusTime;
+        
+        effects.showTimeBonusDisplay(bonusTime); 
+    } 
+    }
 export function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
