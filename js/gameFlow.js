@@ -42,9 +42,11 @@ export function startGame(mode) {
         if (gameState.isProcessing) return;
     gameState.isProcessing = true;
     resetAllEffects();
+    const modeConfig = CONFIG.MODES[mode];
     resetGameState(mode);
     loadUserHighScore(mode); // loadUserHighScore は gameState.userHighScore を更新する
     document.documentElement.style.setProperty('--grid-size', gameState.gridSize);
+    dom.gridContainer.style.setProperty('--grid-size', modeConfig.BOARD_SIZE);
     dom.clearBonusImage.classList.add('hidden');
     showScreen('game');
     

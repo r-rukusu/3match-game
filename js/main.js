@@ -48,7 +48,16 @@ async function initializeApp() {
 
     console.log("Game initialized.");
 }
+const setVhProperty = () => {
+    // 画面高の1%を計算
+    let vh = window.innerHeight * 0.01;
+    // CSSの:rootに設定
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+};
 
+// 初回実行と、画面サイズ変更/画面回転時に実行
+setVhProperty();
+window.addEventListener('resize', setVhProperty);
 /**
  * すべてのイベントリスナーを設定する
  */

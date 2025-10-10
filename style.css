@@ -9,13 +9,15 @@
 
 :root {
     /* (変更なし) */
-    --board-size: 90vmin;
+    --vh: 1vh; 
+    --board-size: min(90vmin, 85vw); 
     --grid-size: 8;
     --gap-size: 0.8vmin;
     --border-radius: 10px;
     --cell-size: calc((var(--board-size) - var(--gap-size) * (var(--grid-size) + 1)) / var(--grid-size));
     --bg-color: #7cbbdd;
     --board-bg-color: #eccdfd;
+    --color-background-dark: #7cbbdd; /* メイン背景（空/海） */
     --cell-bg-color: rgba(162, 196, 255, 0.702);
     --text-color: #090501;
     --button-bg-color: #8189e8;
@@ -30,39 +32,48 @@
    基本レイアウトとフォント設定
    =================================================================================== */
 body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    background-color: var(--bg-color);
+    font-family: 'Arial Rounded MT Bold', 'Helvetica Neue', Arial, sans-serif;
+     background: linear-gradient(135deg, var(--color-background-dark) 0%, #b2e0ff 100%); /* グラデーション背景 */
     color: var(--text-color);
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: calc(var(--vh, 1vh) * 100);
+    min-height: calc(var(--vh) * 100); 
     margin: 0;
     overflow-y: auto;
     overflow-x: hidden;
     padding-top: 20px;
     box-sizing: border-box;
+    scroll-behavior: smooth;
 }
 
 #game-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 550px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 25px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     transform: translateZ(0);
+    min-height: calc(var(--vh) * 100 - 40px); 
+    
     backface-visibility: hidden;
 
     /* これからtransformが変わることをブラウザに常時伝えておく */
     will-change: transform;
+    background-color: var(--color-background-light);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
 }
+
+
 
 h1 {
     font-size: 60px;
     margin-bottom: 20px;
+    text-shadow: 2px 2px 0px var(--color-text-dark); /* 視認性の高いフチ文字 */
 }
 
 #mode-selection {
@@ -132,10 +143,10 @@ h1 {
 /* ローカルハイスコア（Your Best）の表示スタイル */
 .local-high-score-display {
     font-size: 3.2vmin; /* グローバルと差別化 */
-    color: var(--board-bg-color); /* メインカラーを使用 */
+    color: var(--color-text-dark); /* メインカラーを使用 */
     margin-top: 1vmin;
     font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-shadow: 1px 1px 1px rgba(255,255,255,0.7);
 }
 
 /* ユーザー自己ベスト更新メッセージのスタイル */
@@ -177,10 +188,17 @@ h1 {
     text-decoration: none;
     transition: background-color 0.2s;
     margin-top: 15px;
+    box-shadow: var(--button-shadow);
+    transform: translateY(0);
 }
 
 .button:hover {
-    background-color: #776e65;
+    background-color: color-mix(in srgb, var(--color-primary), white 10%);
+}
+
+.button:active {
+    box-shadow: var(--button-active-shadow);
+    transform: translateY(3px);
 }
 
 /* ===================================================================================
@@ -209,7 +227,7 @@ h1 {
 #hud { /* 既存の #game-ui を #hud に読み替える */
     display: flex;
     justify-content: space-between; /* 均等な間隔 */
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     font-size: 20px; /* HUDのフォントサイズを調整 */
     font-weight: bold;
     flex-wrap: nowrap;
@@ -222,24 +240,29 @@ h1 {
     background: var(--board-bg-color);
     color: var(--text-color);
     padding: 8px 10px; /* paddingを調整 */
-    border-radius: 5px;
+    border-radius: 8px;
     flex: 1; /* 各アイテムが均等な幅を占める */
     display: flex;
     flex-direction: column; /* 縦積み */
     align-items: center;
     text-align: center;
     min-width: 80px; /* 最小幅を設定して崩れを防ぐ */
+    border: 2px solid var(--color-primary);
+    box-shadow: 0 4px 0 0 #575dc8;
 }
 
 .hud-item .label {
     font-size: 0.8em;
     opacity: 0.7;
+    letter-spacing: 1px;
 }
 
 /* スコアとレベルの数値 */
 #score, #level {
-    font-size: 1.5em;
-    line-height: 1;
+    font-size: 1.8em;
+    line-height: 1.1;
+    font-weight: 900;
+    text-shadow: 1px 1px 0px var(--color-primary);
 }
 
 /* 時間バーのコンテナ */
@@ -248,42 +271,44 @@ h1 {
 }
 
 #time-bar-container {
-    width: 100%;
-    height: 15px; /* 時間バーの高さ */
-    background-color: #a4a4a4; /* バーの背景色 */
+    width: var(--board-size);
+    max-width: 100%;
+    height: 15px; 
+    background-color: #a4a4a4; 
     border-radius: 5px;
     margin-top: 5px;
     margin-bottom: 10px;
     overflow: hidden;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 2px 2px rgba(255,255,255,0.5);
 }
 
 #time-bar {
     height: 100%;
-    width: 100%; /* 初期値は100%からスタート */
-    transition: width 0.9s linear; /* 1秒ごとの更新に対応するため、少し短く */
-    transform-origin: left; /* 左側を基点に縮小 */
-
-    /* グラデーションの定義: CSSカスタムプロパティ（CSS変数）で色を渡し、
-       時間が減る（widthが減る）につれて色も変化するようにCSS側で処理します。
-       JavaScriptで width に応じた色を計算し、time-bar-color 変数として渡します。
-    */
-    background-color: var(--time-bar-color, var(--time-bar-start-color));
+    width: 100%; 
+    transition: width 0.9s linear; 
+    transform-origin: left; 
+    background: linear-gradient(to right, 
+        var(--time-bar-start-color) 0%, 
+        var(--time-bar-middle-color) 50%, 
+        var(--time-bar-end-color) 100%);
+    background-color: var(--time-bar-color, var(--time-bar-start-color)); /* JSで色を渡せない場合のフォールバック */
 }
 
 #exp-bar-container {
-    width: 100%;
+    width: var(--board-size);
+    max-width: 100%;
     height: 10px;
-    background-color: #ccc;
+    background-color: #333; /* 濃い背景色 */
     border-radius: 5px;
     margin: 5px 0 15px;
     overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
 }
 
 #exp-bar {
     width: 0%;
     height: 100%;
-    background-color: #8f7a66;
+    background-color: #4CAF50; /* レベルアップの緑色 */
     transition: width 0.3s ease;
 }
 
@@ -300,6 +325,7 @@ h1 {
     position: relative;
     margin: 0 auto;
     touch-action: none;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.5); /* 盤面の奥行き */
 }
 
 .cell {
@@ -314,8 +340,11 @@ h1 {
     --translate-x: calc(var(--col) * (var(--cell-size) + var(--gap-size)));
     --translate-y: calc(var(--row) * (var(--cell-size) + var(--gap-size)));
     transform: translate(var(--translate-x), var(--translate-y));
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.34, 1.24, 0.44, 1), opacity 0.24s ease; /* 落下にバウンス効果 */
     will-change: transform, opacity;
+    cursor: grab;
+    /* セル自体にもわずかな立体感 */
+    box-shadow: 0 2px 3px rgba(0,0,0,0.3);
 }
 
 .cell img {
@@ -323,6 +352,7 @@ h1 {
     height: 100%;
     user-select: none;
     pointer-events: none;
+    object-fit: contain;
 }
 
 .cell.bomb::before {
@@ -374,17 +404,20 @@ h1 {
 
 @keyframes pulse-emoji {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+    50% { transform: scale(1.15); }
 }
 
 .cell.selected {
     outline: 3px solid #f90;
+    outline-offset: -4px;
+    z-index: 10;
     transform: translate(var(--translate-x), var(--translate-y)) scale(1.1);
+    box-shadow: 0 0 15px rgba(220, 53, 162, 0.8); /* 選択時のネオンシャドウ */
 }
 
 .cell.fade-out {
     opacity: 0;
-    transform: translate(var(--translate-x), var(--translate-y)) scale(0.5);
+    transform: translate(var(--translate-x), var(--translate-y)) scale(0.2);
 }
 
 /* ===================================================================================
@@ -457,7 +490,7 @@ h1 {
     transform: translate(-50%, -50%) scale(0.5); /* 初期位置 */
     
     /* コンボ表示と共通のスタイルを適用 */
-    font-size: 7vmin; 
+    font-size: 8vmin; 
     font-weight: bold;
     opacity: 0;
     transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); 
